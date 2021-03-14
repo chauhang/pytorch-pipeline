@@ -22,7 +22,6 @@ from common.pytorch_component import ComponentMetadata, PytorchComponent
 from sklearn.model_selection import train_test_split
 from torch import nn
 from torch.utils.data import DataLoader, Dataset, IterableDataset
-from torchtext.datasets.text_classification import URLS
 from torchtext.utils import download_from_url, extract_archive
 from torchvision import transforms
 from tqdm import tqdm
@@ -51,7 +50,8 @@ class PytorchTrainComponent(PytorchComponent):
         if inputs.source_code:
             print("Inside source code block!!!")
             print(inputs.source_code[0])
-            download_from_url(inputs.source_code[0], root=inputs.source_code_path[0])
+            for i in inputs.source_code:
+                download_from_url(i, root=inputs.source_code_path[0])
             print("download successfull")
 
             entry_point=["ls", "-R", "/pvc/input"]

@@ -27,138 +27,6 @@ import boto3
 from botocore.exceptions import ClientError
 import matplotlib.pyplot as plt
 
-class CIFAR10DataModule(pl.LightningDataModule):
-    def __init__(self, **kwargs):
-        """
-        Initialization of inherited lightning data module
-        """
-        super(CIFAR10DataModule, self).__init__()
-
-        self.train_dataset = None
-        self.valid_dataset = None
-        self.test_dataset = None
-        self.train_data_loader = None
-        self.val_data_loader = None
-        self.test_data_loader = None
-        self.normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-        self.valid_transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                self.normalize,
-            ]
-        )
-
-        self.train_transform = transforms.Compose(
-            [
-                transforms.RandomResizedCrop(32),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                self.normalize,
-            ]
-        )
-        self.args = kwargs
-
-    def prepare_data(self):
-        """
-        Implementation of abstract class
-        """
-
-    @staticmethod
-    def getNumFiles(input_path):
-        return len(os.listdir(input_path)) - 1
-
-    def setup(self, stage=None):
-        """
-        Downloads the data, parse it and split the data into train, test, validation data
-
-        :param stage: Stage - training or testing
-        """
-
-        data_path = self.args["train_glob"]
-
-        train_base_url = data_path + "/train"
-        val_base_url = data_path + "/val"
-        test_base_url = data_path + "/test"
-
-        train_count = self.getNumFiles(train_base_url)
-        val_count = self.getNumFiles(val_base_url)
-        test_count = self.getNumFiles(test_base_url)
-
-        train_url = "{}/{}-{}".format(
-            train_base_url, "train", "{0.." + str(train_count) + "}.tar"
-        )
-        valid_url = "{}/{}-{}".format(
-            val_base_url, "val", "{0.." + str(val_count) + "}.tar"
-        )
-        test_url = "{}/{}-{}".format(
-            test_base_url, "test", "{0.." + str(test_count) + "}.tar"
-        )
-
-        self.train_dataset = (
-            wds.Dataset(train_url, handler=wds.warn_and_continue, length=40000 // 40)
-            .shuffle(100)
-            .decode("pil")
-            .rename(image="ppm;jpg;jpeg;png", info="cls")
-            .map_dict(image=self.train_transform)
-            .to_tuple("image", "info")
-            .batched(40)
-        )
-
-        self.valid_dataset = (
-            wds.Dataset(valid_url, handler=wds.warn_and_continue, length=10000 // 20)
-            .shuffle(100)
-            .decode("pil")
-            .rename(image="ppm", info="cls")
-            .map_dict(image=self.valid_transform)
-            .to_tuple("image", "info")
-            .batched(20)
-        )
-
-        self.test_dataset = (
-            wds.Dataset(test_url, handler=wds.warn_and_continue, length=10000 // 20)
-            .shuffle(100)
-            .decode("pil")
-            .rename(image="ppm", info="cls")
-            .map_dict(image=self.valid_transform)
-            .to_tuple("image", "info")
-            .batched(20)
-        )
-
-    def create_data_loader(self, dataset, batch_size, num_workers):
-        return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
-
-    def train_dataloader(self):
-        """
-        :return: output - Train data loader for the given input
-        """
-        self.train_data_loader = self.create_data_loader(
-            self.train_dataset,
-            self.args["train_batch_size"],
-            self.args["train_num_workers"],
-        )
-        return self.train_data_loader
-
-    def val_dataloader(self):
-        """
-        :return: output - Validation data loader for the given input
-        """
-        self.val_data_loader = self.create_data_loader(
-            self.valid_dataset,
-            self.args["val_batch_size"],
-            self.args["val_num_workers"],
-        )
-        return self.val_data_loader
-
-    def test_dataloader(self):
-        """
-        :return: output - Test data loader for the given input
-        """
-        self.test_data_loader = self.create_data_loader(
-            self.test_dataset, self.args["val_batch_size"], self.args["val_num_workers"]
-        )
-        return self.test_data_loader
-
-
 class CIFAR10Classifier(pl.LightningModule):
     def __init__(self, **kwargs):
         """
@@ -191,8 +59,9 @@ class CIFAR10Classifier(pl.LightningModule):
             print("\n\nREFERENCE IMAGE!!!")
             print(self.reference_image.shape)
         x, y = train_batch
-        y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat, y)
+        output = self.forward(x)
+        _, y_hat = torch.max(output, dim=1)
+        loss = F.cross_entropy(output, y)
         self.log("train_loss", loss)
         self.train_acc(y_hat, y)
         self.log("train_acc", self.train_acc.compute())
@@ -201,8 +70,9 @@ class CIFAR10Classifier(pl.LightningModule):
     def test_step(self, test_batch, batch_idx):
 
         x, y = test_batch
-        y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat, y)
+        output = self.forward(x)
+        _, y_hat = torch.max(output, dim=1)
+        loss = F.cross_entropy(output, y)
         if self.args["accelerator"] is not None:
             self.log("test_loss", loss, sync_dist=True)
         else:
@@ -214,8 +84,9 @@ class CIFAR10Classifier(pl.LightningModule):
     def validation_step(self, val_batch, batch_idx):
 
         x, y = val_batch
-        y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat, y)
+        output = self.forward(x)
+        _, y_hat = torch.max(output, dim=1)
+        loss = F.cross_entropy(output, y)
         if self.args["accelerator"] is not None:
             self.log("val_loss", loss, sync_dist=True)
         else:
@@ -331,6 +202,7 @@ def train_model(
         "truck",
     )
 
+    from cifar10_datamodule import CIFAR10DataModule
     dm = CIFAR10DataModule(**dict_args)
     dm.prepare_data()
     dm.setup(stage="fit")
@@ -356,8 +228,7 @@ def train_model(
         save_top_k=1,
         verbose=True,
         monitor="val_loss",
-        mode="min",
-        prefix="",
+        mode="min"
     )
 
     if os.path.exists(os.path.join(tensorboard_root, "cifar10_lightning_kubeflow")):
@@ -372,14 +243,15 @@ def train_model(
     trainer = pl.Trainer(
         gpus=gpus,
         logger=tboard,
-        checkpoint_callback=checkpoint_callback,
+        checkpoint_callback=True,
         max_epochs=max_epochs,
-        callbacks=[lr_logger, early_stopping],
+        callbacks=[lr_logger, early_stopping, checkpoint_callback],
         accelerator=accelerator,
     )
 
     trainer.fit(model, dm)
     trainer.test()
+    torch.save(model.state_dict(), os.path.join(model_save_path, 'resnet.pth'))
 
 
 if __name__ == "__main__":

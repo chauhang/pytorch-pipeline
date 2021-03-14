@@ -17,7 +17,7 @@ import os
 from tqdm import tqdm
 import requests
 from torchtext.utils import download_from_url, extract_archive
-from torchtext.datasets.text_classification import URLS
+from torchtext.datasets as td
 import sys
 import argparse
 import logging
