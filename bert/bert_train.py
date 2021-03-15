@@ -45,8 +45,9 @@ class BertNewsClassifier(pl.LightningModule):
         n_classes = len(self.class_names)
 
         self.fc1 = nn.Linear(self.bert_model.config.hidden_size, 512)
-        self.embedding = nn.EmbeddingBag(1308844, 32, sparse=True)
         self.out = nn.Linear(512, n_classes)
+        self.bert_model.embedding = self.bert_model.embeddings
+        self.embedding = self.bert_model.embeddings
 
         self.scheduler = None
         self.optimizer = None

@@ -19,7 +19,7 @@ cifar10_train_op = components.load_component_from_file(
     components_dir + "/train/component.yaml"
 )
 
-deploy_op = load_component_from_url("https://raw.githubusercontent.com/kubeflow/pipelines/97eae83a96b0ac87805e2d6db6097e479bb38b1f/components/kubeflow/kfserving/component.yaml")
+deploy_op = load_component_from_file("./deploy/component.yaml")
 
 @dsl.pipeline(name="Training pipeline", description="Sample training job test")
 def training(input_directory = "/pvc/input",

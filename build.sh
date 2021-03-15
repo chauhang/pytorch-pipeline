@@ -11,7 +11,7 @@ python3 gen_image_timestamp.py > curr_time.txt
 export images_tag=$(cat curr_time.txt)
 echo ++++ Building component images with tag=$images_tag
 
-MODEL=cifar10
+MODEL=bert
 
 cd ./pytorch
 

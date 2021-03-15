@@ -19,7 +19,7 @@ bert_train_op = components.load_component_from_file(
     components_dir + "/train/component.yaml"
 )
 
-deploy_op = load_component_from_url("https://raw.githubusercontent.com/kubeflow/pipelines/97eae83a96b0ac87805e2d6db6097e479bb38b1f/components/kubeflow/kfserving/component.yaml")
+deploy_op = load_component_from_file("./deploy/component.yaml")
 
 @dsl.pipeline(name="Training pipeline", description="Sample training job test")
 def training(input_directory = "/pvc/input",
@@ -91,7 +91,8 @@ def training(input_directory = "/pvc/input",
     properties = download(url='https://kubeflow-dataset.s3.us-east-2.amazonaws.com/model_archive/bert/properties.json', output_path="/pv/input").add_pvolumes({"/pv":vop.volume}).after(vop)
     requirements = download(url='https://kubeflow-dataset.s3.us-east-2.amazonaws.com/model_archive/bert/requirements.txt', output_path="/pv/input").add_pvolumes({"/pv":vop.volume}).after(vop)
     extrafile = download(url='https://kubeflow-dataset.s3.us-east-2.amazonaws.com/model_archive/bert/index_to_name.json', output_path="/pv/input").add_pvolumes({"/pv":vop.volume}).after(vop)
-    vocabfile = download(url='https://kubeflow-dataset.s3.us-east-2.amazonaws.com/model_archive/bert/source_vocab.pt', output_path="/pv/input").add_pvolumes({"/pv":vop.volume}).after(vop)
+    vocabfile = download(url='https://kubeflow-dataset.s3.us-east-2.amazonaws.com/model_archive/bert/bert-base-uncased-vocab.txt', output_path="/pv/input").add_pvolumes({"/pv":vop.volume}).after(vop)
+    handlerfile = download(url='https://kubeflow-dataset.s3.us-east-2.amazonaws.com/model_archive/bert/bert_handler.py', output_path="/pv/input").add_pvolumes({"/pv":vop.volume}).after(vop)
 
     copy_files = copy_contents(input_dir="/pvc/output/train/models", output_dir="/pvc/input").add_pvolumes({"/pvc":vop.volume}).after(train_output)
     list_input = ls("/pvc/input").add_pvolumes({"/pvc":vop.volume}).after(copy_files)
