@@ -11,8 +11,6 @@ python3 gen_image_timestamp.py > curr_time.txt
 export images_tag=$(cat curr_time.txt)
 echo ++++ Building component images with tag=$images_tag
 
-MODEL=bert
-
 cd ./pytorch
 
 full_image_name=jagadeeshj/testingbert:$images_tag
@@ -39,10 +37,11 @@ pwd
 echo
 echo Running pipeline compilation
 # python3 pipeline.py --target mp
-python3 $MODEL/pipeline.py --target kfp --model $MODEL
+echo "$1/pipeline.py"
+python3 "$1/pipeline.py" --target kfp --model $1
 
 
-#echo 
+#echo
 #echo Deploying to Managed Platform
 
 #python3 deploy_to_managed.py
