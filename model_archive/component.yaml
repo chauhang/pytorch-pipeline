@@ -1,20 +1,19 @@
 name: Model Archiver
 inputs:
-- {name: input_directory, type: String, default: ""}
+- {name: input_dir, type: String, default: ""}
 - {name: properties, type: String, default: ""}
 - {name: extraFiles, type: String, default: ""}
 - {name: modelFile, type: String, default: ""}
 - {name: serializedFile, type: String, default: ""}
 - {name: handlerFile, type: String, default: ""}
 - {name: requirementsFile, type: String, default: ""}
-outputs:
-  - {name: output_directory, type: String}
+- {name: output_dir, type: String}
 implementation:
   container:
-    image: jagadeeshj/model_archive_step:kfpv1.0
+    image: jagadeeshj/model_archive_step:kfpv1.2
     command: ["/usr/local/bin/dockerd-entrypoint.sh",
-        "--output_path", {outputPath: output_directory},
-        "--input_path", {inputPath: input_directory},
+        "--output_path", {inputValue: output_dir},
+        "--input_path", {inputValue: input_dir},
         "--properties", {inputValue: properties},
         "--serializedfile", {inputValue: serializedFile},
         "--handlerfile", {inputValue: handlerFile},

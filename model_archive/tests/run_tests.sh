@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Files in Local Path
-../src/dockerd-entrypoint.sh --output_path ./output --input_path ./input --properties "" --serializedfile "" --handlerfile mnist_handler.py --modelfile "" --extrafiles "" --requirements ""
+# ../src/dockerd-entrypoint.sh --output_path ./output --input_path ./input
 
 # Files in Remote Path
 # ../src/dockerd-entrypoint.sh --output_path ./output --input_path "" --properties "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/model_archive/properties.json" \

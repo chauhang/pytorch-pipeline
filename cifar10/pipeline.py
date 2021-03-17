@@ -19,14 +19,15 @@ cifar10_train_op = components.load_component_from_file(
     components_dir + "/train/component.yaml"
 )
 
-deploy_op = load_component_from_url("https://raw.githubusercontent.com/kubeflow/pipelines/97eae83a96b0ac87805e2d6db6097e479bb38b1f/components/kubeflow/kfserving/component.yaml")
+mar_op = load_component_from_file("./model_archive/component.yaml")
+deploy_op = load_component_from_file("./deploy/component.yaml")
 
 @dsl.pipeline(name="Training pipeline", description="Sample training job test")
-def training(input_directory = "/pvc/input",
-    output_directory = "/pvc/output", handlerFile = "image_classifier"):
+def pytorch_cifar10():
 
     namespace = "admin"
     volume_name = "pvcm"
+    model_name = "torchserve-resnet"
     
     vop = dsl.VolumeOp(
         name=volume_name,
@@ -47,7 +48,7 @@ def training(input_directory = "/pvc/input",
     @dsl.component
     def copy_contents(input_dir: str, output_dir:str):
         return dsl.ContainerOp(
-            name='Download',
+            name='Copy',
             image='busybox:latest',
             command=["cp", "-R", "%s/." % input_dir, "%s" % output_dir],
         )
@@ -96,36 +97,31 @@ def training(input_directory = "/pvc/input",
     copy_files = copy_contents(input_dir="/pvc/output/train/models", output_dir="/pvc/input").add_pvolumes({"/pvc":vop.volume}).after(train_output)
     list_input = ls("/pvc/input").add_pvolumes({"/pvc":vop.volume}).after(copy_files)
 
-    mar_task = dsl.ContainerOp(
-        name='mar_gen',
-        image='jagadeeshj/model_archive_step:kfpv1.2',
-        command=["/usr/local/bin/dockerd-entrypoint.sh"],
-        arguments=[
-            "--output_path", output_directory,
-            "--input_path", input_directory,
-            "--handlerfile", handlerFile
-        ],
-        pvolumes={"/pvc": vop.volume}).after(list_input)
+    mar_task = mar_op(
+        input_dir="/pvc/input",
+        output_dir="/pvc/output",
+        handlerfile="image_classifier").add_pvolumes({"/pvc":vop.volume}).after(list_input)
 
     list_output = ls("/pvc/output").add_pvolumes({"/pvc":vop.volume}).after(mar_task)
 
     deploy = deploy_op(
-        action="create", 
-        model_name="torchserve", 
-        model_uri="pvc://{{workflow.name}}-pvcm/output", 
-        namespace='admin',
+        action="apply",
+        model_name="%s" % model_name,
+        model_uri="pvc://{{workflow.name}}-%s/output" % volume_name,
+        namespace="%s" % namespace,
         framework='pytorch'
     ).after(list_output)
 
-    # op_task = dsl.ContainerOp(
+    # Below example runs model archiver as init container for the deployer task
+    # deployer_task = dsl.ContainerOp(
     #     name='main',
     #     image="quay.io/aipipeline/kfserving-component:v0.5.0",
     #     command=['python'],
     #     arguments=[
     #       "-u", "kfservingdeployer.py",
     #       "--action", "apply",
-    #       "--model-name", "torchserve",
-    #       "--model-uri", "pvc://{{workflow.name}}-%s/input" % volume_name,
+    #       "--model-name", "%s" % model_name,
+    #       "--model-uri", "pvc://{{workflow.name}}-%s/output" % volume_name,
     #       "--namespace", "%s" % namespace,
     #       "--framework", "pytorch",
     #     ],
@@ -134,7 +130,7 @@ def training(input_directory = "/pvc/input",
     #     init_containers=[
     #         dsl.UserContainer(
     #             name='init',
-    #             image='jagadeeshj/model_archive_step:kfpv1.0',
+    #             image='jagadeeshj/model_archive_step:kfpv1.2',
     #             command=["/usr/local/bin/dockerd-entrypoint.sh"],
     #             args=[
     #                 "--output_path", output_directory,
@@ -145,6 +141,5 @@ def training(input_directory = "/pvc/input",
     #     ],
     # ).after(list_input)
 
-
 if __name__ == "__main__":
-    kfp.compiler.Compiler().compile(training, package_path="pytorch_cifar10.yaml")
+    kfp.compiler.Compiler().compile(pytorch_cifar10, package_path="pytorch_cifar10.yaml")
