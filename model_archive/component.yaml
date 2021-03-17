@@ -10,7 +10,7 @@ inputs:
 - {name: output_dir, type: String}
 implementation:
   container:
-    image: jagadeeshj/model_archive_step:kfpv1.2
+    image: jagadeeshj/model_archive_step:kfpv1.3
     command: ["/usr/local/bin/dockerd-entrypoint.sh",
         "--output_path", {inputValue: output_dir},
         "--input_path", {inputValue: input_dir},
