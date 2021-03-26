@@ -17,7 +17,7 @@ def train_evaluate(params, max_epochs=100):
     test_accuracy = trainer.callback_metrics.get("test_acc")
     return test_accuracy
 
-def model_training_hyperparameter_tuning(max_epochs, total_trials, params):
+def model_training_hyperparameter_tuning(max_epochs, total_trials, params, save_path):
     """
      This function takes input params max_epochs, total_trials, params
      and creates a nested run in Mlflow. The parameters, metrics, model and summary are dumped into their
@@ -49,6 +49,13 @@ def model_training_hyperparameter_tuning(max_epochs, total_trials, params):
 
     best_parameters, metrics = ax_client.get_best_parameters()
 
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+
+    best_parameters_file = os.path.join(os.path.abspath(save_path), 'best_parameters.json')
+
+    with open(best_parameters_file, 'w') as fp:
+        json.dump(best_parameters, fp)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -75,6 +82,10 @@ if __name__ == "__main__":
         help="ax parameters",
     )
 
+    parser.add_argument(
+        "--output_dir",
+        help="path to store best parameters",
+    )
     args = parser.parse_args()
 
     if "max_epochs" in args:
@@ -85,7 +96,9 @@ if __name__ == "__main__":
     input_model_file = args.model_file
     input_data_module_file = args.data_module_file
 
-    params_file = args.params_file
+    params_file = os.path.abspath(args.params_file)
+
+    output_path = args.output_dir
 
     with open(params_file) as f:
         data = f.read()
@@ -98,5 +111,5 @@ if __name__ == "__main__":
     from data_module_file import DataModule
     
     model_training_hyperparameter_tuning(
-        max_epochs=int(max_epochs), total_trials=int(args.total_trials), params=params
+        max_epochs=int(max_epochs), total_trials=int(args.total_trials), params=params, save_path=output_path
     )
