@@ -1,17 +1,15 @@
-import logging
+import os
 import os
 import shutil
-from itertools import islice
+from argparse import ArgumentParser
 from pathlib import Path
-from random import sample
 
+import boto3
+import matplotlib.pyplot as plt
 import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
-import torchvision
-import webdataset as wds
-from PIL import Image
 from pytorch_lightning.callbacks import (
     EarlyStopping,
     LearningRateMonitor,
@@ -20,12 +18,8 @@ from pytorch_lightning.callbacks import (
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.metrics import Accuracy
 from torch import nn
-from torch.multiprocessing import Queue
-from torch.utils.data import DataLoader, IterableDataset
-from torchvision import models, transforms
-import boto3
-from botocore.exceptions import ClientError
-import matplotlib.pyplot as plt
+from torchvision import models
+
 
 class CIFAR10Classifier(pl.LightningModule):
     def __init__(self, **kwargs):
@@ -168,7 +162,9 @@ def train_model(
     val_num_workers: int,
     learning_rate: int,
     accelerator: str,
-    model_save_path: str
+    model_save_path: str,
+    bucket_name: str,
+    folder_name: str,
 ):
 
     if accelerator == "None":
@@ -253,29 +249,144 @@ def train_model(
     trainer.test()
     torch.save(model.state_dict(), os.path.join(model_save_path, 'resnet.pth'))
 
+    s3 = boto3.resource("s3")
+    bucket_name = bucket_name
+    folder_name = folder_name
+    bucket = s3.Bucket(bucket_name)
+    s3_path = "s3://" + bucket_name + "/" + folder_name
+
+    for obj in bucket.objects.filter(Prefix=folder_name + "/"):
+        s3.Object(bucket.name, obj.key).delete()
+
+    for event_file in os.listdir(
+            tensorboard_root + "/cifar10_lightning_kubeflow/version_0"
+    ):
+        s3.Bucket(bucket_name).upload_file(
+            tensorboard_root + "/cifar10_lightning_kubeflow/version_0/" + event_file,
+            folder_name + "/" + event_file,
+            ExtraArgs={"ACL": "public-read"},
+        )
+
+    with open("logdir.txt", "w") as f:
+        f.write(s3_path)
+
+def add_parser_arguments(parser):
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="/pvc/output/processing",
+        help="Dataset path (default: /pvc/output/processing)",
+    )
+
+    parser.add_argument(
+        "--output_path",
+        type=str,
+        default="/pvc/output/train/models",
+        help="Path to write the output (default: /pvc/output/train/models)",
+    )
+
+    parser.add_argument(
+        "--tensorboard_root",
+        type=str,
+        default="/pvc/output/train/tensorboard",
+        help="Path to log tensorboard artifacts (default: /pvc/output/train/tensorboard)",
+    )
+
+    parser.add_argument(
+        "--max_epochs",
+        type=int,
+        default=5,
+        help="Number of epochs to run (default: 5)",
+    )
+
+    parser.add_argument(
+        "--gpus",
+        type=int,
+        default=0,
+        help="Number of gpus (default: 0)",
+    )
+
+    parser.add_argument(
+        "--train_batch_size",
+        type=int,
+        default=None,
+        help="Train Batch Size (default: None)",
+    )
+
+    parser.add_argument(
+        "--val_batch_size",
+        type=int,
+        default=None,
+        help="Validation batch size Batch Size (default: None)",
+    )
+
+    parser.add_argument(
+        "--train_num_workers",
+        type=int,
+        default=4,
+        help="Number of workers for training (default: 4)",
+    )
+
+    parser.add_argument(
+        "--val_num_workers",
+        type=int,
+        default=4,
+        help="Number of workers for validation (default: 4)",
+    )
+
+    parser.add_argument(
+        "--learning_rate",
+        type=float,
+        default=0.001,
+        help="Learning rate (default: 0.001)",
+    )
+
+    parser.add_argument(
+        "--accelerator",
+        type=str,
+        default=None,
+        help="Accelerator (default: None)",
+    )
+
+    parser.add_argument(
+        "--bucket_name",
+        type=str,
+        default="kubeflow-dataset",
+        help="S3 bucket name (default: kubeflow-dataset)",
+    )
+
+    parser.add_argument(
+        "--s3_folder_path",
+        type=str,
+        default="Cifar10Viz",
+        help="S3 folder path (default: Cifar10Viz)",
+    )
+
+    return parser
+
 
 if __name__ == "__main__":
 
-    import sys
-    import json
+    parser = ArgumentParser(add_help=False)
 
-    data_set = json.loads(sys.argv[1])[0]
-    output_path = json.loads(sys.argv[2])[0]
-    input_parameters = json.loads(sys.argv[3])[0]
+    parser = add_parser_arguments(parser)
 
-    print("INPUT_PARAMETERS:::")
-    print(input_parameters)
+    args = vars(parser.parse_args())
 
-    tensorboard_root = input_parameters['tensorboard_root']
-    max_epochs = input_parameters['max_epochs']
-    train_batch_size = input_parameters['train_batch_size']
-    val_batch_size = input_parameters['val_batch_size']
-    train_num_workers = input_parameters['train_num_workers']
-    val_num_workers = input_parameters['val_num_workers']
-    learning_rate = input_parameters['learning_rate']
-    accelerator = input_parameters['accelerator']
-    gpus = input_parameters['gpus']
+    data_set = args["dataset"]
+    output_path = args["output_path"]
 
+    tensorboard_root = args['tensorboard_root']
+    max_epochs = args['max_epochs']
+    train_batch_size = args['train_batch_size']
+    val_batch_size = args['val_batch_size']
+    train_num_workers = args['train_num_workers']
+    val_num_workers = args['val_num_workers']
+    learning_rate = args['learning_rate']
+    accelerator = args['accelerator']
+    gpus = args['gpus']
+    bucket_name = args["bucket_name"]
+    folder_name = args["s3_folder_path"]
 
     train_model(
         train_glob=data_set,
@@ -288,5 +399,7 @@ if __name__ == "__main__":
         train_num_workers=train_num_workers,
         val_num_workers=val_num_workers,
         learning_rate=learning_rate,
-        accelerator=accelerator
+        accelerator=accelerator,
+        bucket_name=bucket_name,
+        folder_name=folder_name,
     )
