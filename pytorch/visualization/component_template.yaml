@@ -4,7 +4,7 @@ inputs:
 - {name: confusion_matrix_path, type: String, default: ""}
 implementation:
   container:
-    image: shrinathsuresh/visualization:v1.0
+    image: __IMAGE_NAME__
     command: ["python"]
     arguments: [
         -u, /component/src/visualization.py,

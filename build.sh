@@ -13,7 +13,7 @@ echo ++++ Building component images with tag=$images_tag
 
 cd ./pytorch
 
-full_image_name=jagadeeshj/testingbert:$images_tag
+full_image_name=shrinathsuresh/testcifar:$images_tag
 
 echo IMAGE TO BUILD: $full_image_name
 
@@ -31,7 +31,16 @@ do
     cd ..
 done
 
-cd ..
+full_image_name=shrinathsuresh/testviz:$images_tag
+
+docker build -t $full_image_name .
+docker push $full_image_name
+
+cd visualization
+sed -e "s|__IMAGE_NAME__|$full_image_name|g" component_template.yaml > component.yaml
+cat component.yaml 
+
+cd ../..
 
 pwd
 echo
