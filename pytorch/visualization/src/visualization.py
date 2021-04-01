@@ -34,7 +34,7 @@ class Visualization:
                 }
             ]
         }
-        with open("mlpipeline-ui-metadata.json", "w") as f:
+        with open("/mlpipeline-ui-metadata.json", "w") as f:
             json.dump(metadata, f)
 
     def generate_visualization(self):

@@ -33,10 +33,11 @@ done
 
 full_image_name=shrinathsuresh/testviz:$images_tag
 
+cd visualization
+
 docker build -t $full_image_name .
 docker push $full_image_name
 
-cd visualization
 sed -e "s|__IMAGE_NAME__|$full_image_name|g" component_template.yaml > component.yaml
 cat component.yaml 
 
