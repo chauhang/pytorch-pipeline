@@ -52,7 +52,7 @@ class CIFAR10Classifier(pl.LightningModule):
     def training_step(self, train_batch, batch_idx):
         if batch_idx == 0:
             self.reference_image = (train_batch[0][0]).unsqueeze(0)
-            #self.reference_image.resize((1,1,28,28))
+            # self.reference_image.resize((1,1,28,28))
             print("\n\nREFERENCE IMAGE!!!")
             print(self.reference_image.shape)
         x, y = train_batch
@@ -143,17 +143,15 @@ class CIFAR10Classifier(pl.LightningModule):
         # logging layer 1 activations
         out = self.model_conv.conv1(x)
         c = self.makegrid(out, 4)
-        self.logger.experiment.add_image(
-            "layer 1", c, self.current_epoch, dataformats="HW"
-        )
+        self.logger.experiment.add_image("layer 1", c, self.current_epoch, dataformats="HW")
 
     def training_epoch_end(self, outputs):
         self.showActivations(self.reference_image)
 
         # Logging graph
-        if(self.current_epoch==0):
-            sampleImg=torch.rand((1,3,64,64))
-            self.logger.experiment.add_graph(CIFAR10Classifier(),sampleImg)
+        if self.current_epoch == 0:
+            sampleImg = torch.rand((1, 3, 64, 64))
+            self.logger.experiment.add_graph(CIFAR10Classifier(), sampleImg)
 
 
 def train_model(
@@ -191,14 +189,13 @@ def train_model(
     }
 
     from cifar10_datamodule import CIFAR10DataModule
+
     dm = CIFAR10DataModule(**dict_args)
     dm.prepare_data()
     dm.setup(stage="fit")
 
     model = CIFAR10Classifier(**dict_args)
-    early_stopping = EarlyStopping(
-        monitor="val_loss", mode="min", patience=5, verbose=True
-    )
+    early_stopping = EarlyStopping(monitor="val_loss", mode="min", patience=5, verbose=True)
 
     Path(model_save_path).mkdir(parents=True, exist_ok=True)
 
@@ -216,7 +213,7 @@ def train_model(
         save_top_k=1,
         verbose=True,
         monitor="val_loss",
-        mode="min"
+        mode="min",
     )
 
     if os.path.exists(os.path.join(tensorboard_root, "cifar10_lightning_kubeflow")):
@@ -239,9 +236,13 @@ def train_model(
 
     trainer.fit(model, dm)
     trainer.test()
-    torch.save(model.state_dict(), os.path.join(model_save_path, 'resnet.pth'))
+    torch.save(model.state_dict(), os.path.join(model_save_path, "resnet.pth"))
 
-    generate_confusion_matrix(actuals=trainer.model.target, preds=trainer.model.preds, output_path=os.path.join(model_save_path, "confusion_matrix.csv"))
+    generate_confusion_matrix(
+        actuals=trainer.model.target,
+        preds=trainer.model.preds,
+        output_path=os.path.join(model_save_path, "confusion_matrix.csv"),
+    )
 
     s3 = boto3.resource("s3")
     bucket_name = bucket_name
@@ -252,9 +253,7 @@ def train_model(
     for obj in bucket.objects.filter(Prefix=folder_name + "/"):
         s3.Object(bucket.name, obj.key).delete()
 
-    for event_file in os.listdir(
-            tensorboard_root + "/cifar10_lightning_kubeflow/version_0"
-    ):
+    for event_file in os.listdir(tensorboard_root + "/cifar10_lightning_kubeflow/version_0"):
         s3.Bucket(bucket_name).upload_file(
             tensorboard_root + "/cifar10_lightning_kubeflow/version_0/" + event_file,
             folder_name + "/" + event_file,
@@ -263,6 +262,7 @@ def train_model(
 
     with open("logdir.txt", "w") as f:
         f.write(s3_path)
+
 
 def add_parser_arguments(parser):
     parser.add_argument(
@@ -370,15 +370,15 @@ if __name__ == "__main__":
     data_set = args["dataset"]
     output_path = args["output_path"]
 
-    tensorboard_root = args['tensorboard_root']
-    max_epochs = args['max_epochs']
-    train_batch_size = args['train_batch_size']
-    val_batch_size = args['val_batch_size']
-    train_num_workers = args['train_num_workers']
-    val_num_workers = args['val_num_workers']
-    learning_rate = args['learning_rate']
-    accelerator = args['accelerator']
-    gpus = args['gpus']
+    tensorboard_root = args["tensorboard_root"]
+    max_epochs = args["max_epochs"]
+    train_batch_size = args["train_batch_size"]
+    val_batch_size = args["val_batch_size"]
+    train_num_workers = args["train_num_workers"]
+    val_num_workers = args["val_num_workers"]
+    learning_rate = args["learning_rate"]
+    accelerator = args["accelerator"]
+    gpus = args["gpus"]
     bucket_name = args["bucket_name"]
     folder_name = args["s3_folder_path"]
 
