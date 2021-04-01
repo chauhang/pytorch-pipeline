@@ -19,6 +19,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.metrics import Accuracy
 from torch import nn
 from torchvision import models
+from utils import generate_confusion_matrix
 
 
 class CIFAR10Classifier(pl.LightningModule):
@@ -41,6 +42,8 @@ class CIFAR10Classifier(pl.LightningModule):
         self.train_acc = Accuracy()
         self.val_acc = Accuracy()
         self.test_acc = Accuracy()
+        self.preds = []
+        self.target = []
 
     def forward(self, x):
         out = self.model_conv(x)
@@ -62,7 +65,6 @@ class CIFAR10Classifier(pl.LightningModule):
         return {"loss": loss}
 
     def test_step(self, test_batch, batch_idx):
-
         x, y = test_batch
         output = self.forward(x)
         _, y_hat = torch.max(output, dim=1)
@@ -72,6 +74,9 @@ class CIFAR10Classifier(pl.LightningModule):
         else:
             self.log("test_loss", loss)
         self.test_acc(y_hat, y)
+        self.preds += y_hat.tolist()
+        self.target += y.tolist()
+
         self.log("test_acc", self.test_acc.compute())
         return {"test_acc": self.test_acc.compute()}
 
@@ -185,19 +190,6 @@ def train_model(
         "accelerator": accelerator,
     }
 
-    classes = (
-        "plane",
-        "car",
-        "bird",
-        "cat",
-        "deer",
-        "dog",
-        "frog",
-        "horse",
-        "ship",
-        "truck",
-    )
-
     from cifar10_datamodule import CIFAR10DataModule
     dm = CIFAR10DataModule(**dict_args)
     dm.prepare_data()
@@ -248,6 +240,8 @@ def train_model(
     trainer.fit(model, dm)
     trainer.test()
     torch.save(model.state_dict(), os.path.join(model_save_path, 'resnet.pth'))
+
+    generate_confusion_matrix(actuals=trainer.model.target, preds=trainer.model.preds, output_path=os.path.join(model_save_path, "confusion_matrix.csv"))
 
     s3 = boto3.resource("s3")
     bucket_name = bucket_name
