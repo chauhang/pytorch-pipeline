@@ -1,4 +1,5 @@
 import json
+import os
 from argparse import ArgumentParser
 
 
@@ -29,7 +30,7 @@ class Visualization:
                         {"name": "predicted", "type": "CATEGORY"},
                         {"name": "count", "type": "NUMBER"},
                     ],
-                    "source": confusion_matrix_path,
+                    "source": os.path.join(confusion_matrix_path, "confusion_matrix.csv"),
                     # Convert vocab to string because for bealean values we want "True|False" to match csv data.
                     "labels": "vocab",
                 }
