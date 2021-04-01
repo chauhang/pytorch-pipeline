@@ -2,6 +2,8 @@ name: Visualization
 description: Visualization
 inputs:
 - {name: confusion_matrix_path, type: String, default: ""}
+outputs:
+  - {name: MLPipeline UI metadata, type: UI metadata}
 implementation:
   container:
     image: shrinathsuresh/visualization:v1.0
