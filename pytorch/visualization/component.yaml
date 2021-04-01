@@ -1,0 +1,12 @@
+name: Ax-HPO
+description: ax hyper parameter optimizer
+inputs:
+- {name: confusion_matrix_path, type: String, default: ""}
+implementation:
+  container:
+    image: jagadeeshj/ax-hpo:v1.0
+    command: ["python"]
+    arguments: [
+        -u, /component/src/ax_hpo.py,
+        "--confusion_matrix_path", {inputValue: confusion_matrix_path}
+    ]
