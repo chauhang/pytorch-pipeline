@@ -12,4 +12,3 @@ implementation:
     ]
     fileOutputs:
       MLPipeline UI metadata: /mlpipeline-ui-metadata.json
-      MLPipeline Metrics: /mlpipeline-metrics.json
