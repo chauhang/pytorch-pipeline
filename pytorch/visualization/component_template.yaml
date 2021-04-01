@@ -6,7 +6,7 @@ implementation:
   container:
     image: __IMAGE_NAME__
     command: ["python"]
-    arguments: [
+    args: [
         -u, /component/src/visualization.py,
-        "--confusion_matrix_path", {inputValue: confusion_matrix_path}
+        --confusion_matrix_path, {inputValue: confusion_matrix_path}
     ]

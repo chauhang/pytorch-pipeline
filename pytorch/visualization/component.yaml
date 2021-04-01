@@ -6,7 +6,7 @@ implementation:
   container:
     image: shrinathsuresh/visualization:v1.0
     command: ["python"]
-    arguments: [
+    args: [
         -u, /component/src/visualization.py,
-        "--confusion_matrix_path", {inputValue: confusion_matrix_path}
+        --confusion_matrix_path, {inputValue: confusion_matrix_path}
     ]
