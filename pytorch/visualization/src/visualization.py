@@ -18,6 +18,7 @@ class Visualization:
         self.parser_args = vars(parser.parse_args())
 
     def _generate_confusion_matrix_metadata(self, confusion_matrix_path):
+        print("Generating Confusion matrix Metadata")
         metadata = {
             "outputs": [
                 {
@@ -30,7 +31,7 @@ class Visualization:
                     ],
                     "source": confusion_matrix_path,
                     # Convert vocab to string because for bealean values we want "True|False" to match csv data.
-                    "labels": list(map(str, [])),
+                    "labels": "vocab",
                 }
             ]
         }
@@ -41,6 +42,7 @@ class Visualization:
         self._parser_input_arguments()
 
         confusion_matrix_path = self.parser_args["confusion_matrix_path"]
+        print('Confusion Matrix Path: {}'.format(confusion_matrix_path))
 
         if confusion_matrix_path:
             self._generate_confusion_matrix_metadata(confusion_matrix_path=confusion_matrix_path)

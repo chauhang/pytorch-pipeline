@@ -10,3 +10,6 @@ implementation:
         -u, /component/src/visualization.py,
         --confusion_matrix_path, {inputValue: confusion_matrix_path}
     ]
+    fileOutputs:
+      MLPipeline UI metadata: /mlpipeline-ui-metadata.json
+      MLPipeline Metrics: /mlpipeline-metrics.json
