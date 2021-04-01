@@ -1,5 +1,4 @@
-import subprocess
-from argparse import ArgumentParser
+import sys
 from pathlib import Path
 
 import torchvision
@@ -8,17 +7,10 @@ from sklearn.model_selection import train_test_split
 
 if __name__ == "__main__":
 
-    parser = ArgumentParser(add_help=False)
-    parser.add_argument(
-        "--output_path",
-        type=str,
-        default="/pvc/output/processing",
-        help="Output path to download cifar 10 dataset (default: /pvc/output/processing)",
-    )
+    import json
+    import subprocess
 
-    args = vars(parser.parse_args())
-
-    output_path = args["output_path"]
+    output_path = json.loads(sys.argv[2])[0]
 
     trainset = torchvision.datasets.CIFAR10(root="./", train=True, download=True)
     testset = torchvision.datasets.CIFAR10(root="./", train=False, download=True)
@@ -35,7 +27,7 @@ if __name__ == "__main__":
 
     for name in [(trainset, "train"), (valset, "val"), (testset, "test")]:
         with wds.ShardWriter(
-                output_path + "/" + str(name[1]) + "/" + str(name[1]) + "-%d.tar", maxcount=1000
+            output_path + "/" + str(name[1]) + "/" + str(name[1]) + "-%d.tar", maxcount=1000
         ) as sink:
             for index, (image, cls) in enumerate(name[0]):
                 sink.write({"__key__": "%06d" % index, "ppm": image, "cls": cls})
