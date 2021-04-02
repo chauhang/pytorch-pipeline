@@ -8,3 +8,4 @@ webdataset
 torchvision
 pandas
 numpy
+s3fs

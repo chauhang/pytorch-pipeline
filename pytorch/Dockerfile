@@ -1,6 +1,6 @@
 FROM gcr.io/deeplearning-platform-release/pytorch-gpu:latest
 
-RUN pip install image pandas sklearn transformers torch torchtext pyarrow
+RUN pip install image pandas sklearn transformers torch torchtext pyarrow s3fs
 
 ENV PYTHONPATH /component
 
