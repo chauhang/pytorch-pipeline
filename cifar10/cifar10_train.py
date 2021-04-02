@@ -257,6 +257,8 @@ def train_model(
         output_path=os.path.join(model_save_path, "confusion_matrix.csv"),
     )
 
+    print("Generating Visualization")
+    print("Tensorboard Root Path: {}".format(tensorboard_root))
     Visualization().generate_visualization(tensorboard_root=tensorboard_root)
 
     if bucket_name:

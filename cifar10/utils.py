@@ -54,9 +54,9 @@ class Visualization:
         )
 
     def generate_visualization(self, tensorboard_root=None):
+        print("Tensorboard Root: {}".format(tensorboard_root))
 
         if tensorboard_root:
-            print("Tensorboard Root: {}".format(tensorboard_root))
             self._enable_tensorboard_visualization(tensorboard_root)
 
         # confusion_matrix_path = self.parser_args["confusion_matrix_path"]
