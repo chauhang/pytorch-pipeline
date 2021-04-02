@@ -3,23 +3,11 @@ import json
 import os
 
 from sklearn.metrics import confusion_matrix
-from argparse import ArgumentParser
 
 
 class Visualization:
     def __init__(self):
         self.parser_args = None
-
-    def _parser_input_arguments(self):
-        parser = ArgumentParser(add_help=False)
-        parser.add_argument(
-            "--confusion_matrix_path",
-            type=str,
-            default="",
-            help="Confusion Matrix path (default: '')",
-        )
-
-        self.parser_args = vars(parser.parse_args())
 
     def _generate_confusion_matrix_metadata(self, confusion_matrix_path):
         print("Generating Confusion matrix Metadata")
@@ -66,7 +54,6 @@ class Visualization:
         )
 
     def generate_visualization(self, tensorboard_root=None):
-        self._parser_input_arguments()
 
         if tensorboard_root:
             print("Tensorboard Root: {}".format(tensorboard_root))
