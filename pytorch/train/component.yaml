@@ -31,6 +31,6 @@ implementation:
     - {inputValue: source_code}
     - --source_code_path
     - {inputValue: source_code_path}
-  fileOutputs:
-    MLPipeline UI metadata: /mlpipeline-ui-metadata.json
+    fileOutputs:
+      MLPipeline UI metadata: /mlpipeline-ui-metadata.json
    
