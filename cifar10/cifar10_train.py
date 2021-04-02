@@ -18,7 +18,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.metrics import Accuracy
 from torch import nn
 from torchvision import models
-from utils import generate_confusion_matrix
+from utils import generate_confusion_matrix, Visualization
 
 
 class CIFAR10Classifier(pl.LightningModule):
@@ -256,6 +256,8 @@ def train_model(
         preds=trainer.model.preds,
         output_path=os.path.join(model_save_path, "confusion_matrix.csv"),
     )
+
+    Visualization().generate_visualization(tensorboard_root=tensorboard_root)
 
     if bucket_name:
         s3 = boto3.resource("s3")
