@@ -257,9 +257,13 @@ def train_model(
         output_path=os.path.join(model_save_path, "confusion_matrix.csv"),
     )
 
+    test_accuracy = round(float(trainer.model.test_acc.compute()), 2)
+
     print("Generating Visualization")
     print("Tensorboard Root Path: {}".format(tensorboard_root))
-    Visualization().generate_visualization(tensorboard_root=tensorboard_root)
+    Visualization().generate_visualization(
+        tensorboard_root=tensorboard_root, accuracy=test_accuracy
+    )
 
     if bucket_name:
         s3 = boto3.resource("s3")

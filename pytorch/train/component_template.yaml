@@ -13,6 +13,7 @@ inputs:
   - {name: source_code_path, type: JsonArray, description: 'local path to download code'}
 outputs:
   - {name: MLPipeline UI metadata, type: UI metadata}
+  - {name: MLPipeline Metrics,     type: Metrics}
  
 implementation:
   container:
@@ -33,4 +34,4 @@ implementation:
     - {inputValue: source_code_path}
     fileOutputs:
       MLPipeline UI metadata: /mlpipeline-ui-metadata.json
-   
+      MLPipeline Metrics: /mlpipeline-metrics.json
