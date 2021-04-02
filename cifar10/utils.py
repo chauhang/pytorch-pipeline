@@ -3,6 +3,8 @@ import json
 import os
 
 from sklearn.metrics import confusion_matrix
+from io import StringIO
+import boto3
 
 
 class Visualization:
@@ -12,23 +14,20 @@ class Visualization:
     def _generate_confusion_matrix_metadata(self, confusion_matrix_path):
         print("Generating Confusion matrix Metadata")
         metadata = {
-            "outputs": [
-                {
-                    "type": "confusion_matrix",
-                    "format": "csv",
-                    "schema": [
-                        {"name": "target", "type": "CATEGORY"},
-                        {"name": "predicted", "type": "CATEGORY"},
-                        {"name": "count", "type": "NUMBER"},
-                    ],
-                    "source": os.path.join(confusion_matrix_path, "confusion_matrix.csv"),
-                    # Convert vocab to string because for bealean values we want "True|False" to match csv data.
-                    "labels": "vocab",
-                }
-            ]
+            "type": "confusion_matrix",
+            "format": "csv",
+            "schema": [
+                {"name": "target", "type": "CATEGORY"},
+                {"name": "predicted", "type": "CATEGORY"},
+                {"name": "count", "type": "NUMBER"},
+            ],
+            "source": confusion_matrix_path,
+            # Convert vocab to string because for bealean values we want "True|False" to match csv data.
+            "labels": "vocab",
         }
-        with open("/mlpipeline-ui-metadata.json", "w") as f:
-            json.dump(metadata, f)
+        self._write_ui_metadata(
+            metadata_filepath="/mlpipeline-ui-metadata.json", metadata_dict=metadata
+        )
 
     def _write_ui_metadata(self, metadata_filepath, metadata_dict, key="outputs"):
         if not os.path.exists(metadata_filepath):
@@ -63,7 +62,30 @@ class Visualization:
             metadata_filepath="/mlpipeline-metrics.json", metadata_dict=metadata, key="metrics"
         )
 
-    def generate_visualization(self, tensorboard_root=None, accuracy=None):
+    def _generate_confusion_matrix(self, confusion_matrix_dict):
+        actuals = confusion_matrix_dict["actuals"]
+        preds = confusion_matrix_dict["preds"]
+        bucket_name = confusion_matrix_dict["bucket_name"]
+        folder_name = confusion_matrix_dict["folder_name"]
+
+        # Generating confusion matrix
+        confusion_matrix_output = confusion_matrix(actuals, preds)
+        confusion_matrix_df = pd.DataFrame(confusion_matrix_output)
+        confusion_matrix_key = os.path.join(folder_name, "confusion_df.csv")
+
+        # Logging confusion matrix to ss3
+        csv_buffer = StringIO()
+        confusion_matrix_df.to_csv(csv_buffer)
+        s3_resource = boto3.resource("s3")
+        s3_resource.Object(bucket_name, confusion_matrix_key).put(Body=csv_buffer.getvalue())
+
+        # Generating metadata
+        confusion_matrix_s3_path = s3_path = "s3://" + bucket_name + "/" + confusion_matrix_key
+        self._generate_confusion_matrix_metadata(confusion_matrix_s3_path)
+
+    def generate_visualization(
+        self, tensorboard_root=None, accuracy=None, confusion_matrix_dict=None
+    ):
         print("Tensorboard Root: {}".format(tensorboard_root))
         print("Accuracy: {}".format(accuracy))
 
@@ -73,14 +95,5 @@ class Visualization:
         if accuracy:
             self._visualize_accuracy_metric(accuracy=accuracy)
 
-        # confusion_matrix_path = self.parser_args["confusion_matrix_path"]
-        # print('Confusion Matrix Path: {}'.format(confusion_matrix_path))
-        #
-        # if confusion_matrix_path:
-        #     self._generate_confusion_matrix_metadata(confusion_matrix_path=confusion_matrix_path)
-
-
-def generate_confusion_matrix(actuals, preds, output_path):
-    confusion_matrix_output = confusion_matrix(actuals, preds)
-    confusion_df = pd.DataFrame(confusion_matrix_output)
-    confusion_df.to_csv(output_path, index=False)
+        if confusion_matrix:
+            self._generate_confusion_matrix(confusion_matrix_dict=confusion_matrix_dict)

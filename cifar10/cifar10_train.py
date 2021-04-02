@@ -18,7 +18,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.metrics import Accuracy
 from torch import nn
 from torchvision import models
-from utils import generate_confusion_matrix, Visualization
+from utils import Visualization
 
 
 class CIFAR10Classifier(pl.LightningModule):
@@ -251,18 +251,21 @@ def train_model(
     trainer.test()
     torch.save(model.state_dict(), os.path.join(model_save_path, "resnet.pth"))
 
-    generate_confusion_matrix(
-        actuals=trainer.model.target,
-        preds=trainer.model.preds,
-        output_path=os.path.join(model_save_path, "confusion_matrix.csv"),
-    )
+    confusion_matrix_dict = {
+        "actuals": trainer.model.target,
+        "prds": trainer.model.preds,
+        "bucket_name": bucket_name,
+        "folder_name": folder_name,
+    }
 
     test_accuracy = round(float(trainer.model.test_acc.compute()), 2)
 
     print("Generating Visualization")
     print("Tensorboard Root Path: {}".format(tensorboard_root))
     Visualization().generate_visualization(
-        tensorboard_root=tensorboard_root, accuracy=test_accuracy
+        tensorboard_root=tensorboard_root,
+        accuracy=test_accuracy,
+        confusion_matrix_dict=confusion_matrix_dict,
     )
 
     if bucket_name:
