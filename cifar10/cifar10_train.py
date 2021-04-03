@@ -235,7 +235,8 @@ def train_model(
     Path(tensorboard_root).mkdir(parents=True, exist_ok=True)
 
     # Tensorboard root name of the logging directory
-    tboard = TensorBoardLogger(tensorboard_root, "cifar10_lightning_kubeflow")
+    tboard_run_name = "cifar10_lightning_kubeflow"
+    tboard = TensorBoardLogger(tensorboard_root, tboard_run_name)
     lr_logger = LearningRateMonitor()
 
     trainer = pl.Trainer(
@@ -252,31 +253,31 @@ def train_model(
     torch.save(model.state_dict(), os.path.join(model_save_path, "resnet.pth"))
 
     if bucket_name:
-        s3 = boto3.resource("s3")
-        bucket_name = bucket_name
-        folder_name = folder_name
-        bucket = s3.Bucket(bucket_name)
-        s3_path = "s3://" + bucket_name + "/" + folder_name
-
-        for obj in bucket.objects.filter(Prefix=folder_name + "/"):
-            s3.Object(bucket.name, obj.key).delete()
-
-        for event_file in os.listdir(tensorboard_root + "/cifar10_lightning_kubeflow/version_0"):
-            s3.Bucket(bucket_name).upload_file(
-                tensorboard_root + "/cifar10_lightning_kubeflow/version_0/" + event_file,
-                folder_name + "/" + event_file,
-                ExtraArgs={"ACL": "public-read"},
-            )
-
-        with open("logdir.txt", "w") as f:
-            f.write(s3_path)
+        # s3 = boto3.resource("s3")
+        # bucket_name = bucket_name
+        # folder_name = folder_name
+        # bucket = s3.Bucket(bucket_name)
+        # s3_path = "s3://" + bucket_name + "/" + folder_name
+        #
+        # for obj in bucket.objects.filter(Prefix=folder_name + "/"):
+        #     s3.Object(bucket.name, obj.key).delete()
+        #
+        # for event_file in os.listdir(tensorboard_root + "/cifar10_lightning_kubeflow/version_0"):
+        #     s3.Bucket(bucket_name).upload_file(
+        #         tensorboard_root + "/cifar10_lightning_kubeflow/version_0/" + event_file,
+        #         folder_name + "/" + event_file,
+        #         ExtraArgs={"ACL": "public-read"},
+        #     )
+        #
+        # with open("logdir.txt", "w") as f:
+        #     f.write(s3_path)
 
         print("Generating Visualization")
         print("Tensorboard Root Path: {}".format(tensorboard_root))
 
         confusion_matrix_dict = {
             "actuals": trainer.model.target,
-            "prds": trainer.model.preds,
+            "preds": trainer.model.preds,
             "bucket_name": bucket_name,
             "folder_name": folder_name,
         }
@@ -284,7 +285,7 @@ def train_model(
         test_accuracy = round(float(trainer.model.test_acc.compute()), 2)
 
         Visualization().generate_visualization(
-            tensorboard_root=s3_path,
+            tensorboard_root=os.path.join(tensorboard_root, tboard_run_name),
             accuracy=test_accuracy,
             confusion_matrix_dict=confusion_matrix_dict,
         )

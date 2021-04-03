@@ -86,7 +86,7 @@ def pytorch_cifar10():
         "accelerator": None, "bucket_name": "kubeflow-dataset", "folder_name": "Cifar10Viz"}],
         source_code = ["https://kubeflow-dataset.s3.us-east-2.amazonaws.com/cifar10_datamodule.py", "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/cifar10_train.py", "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/utils.py"],
         source_code_path = ["/pvc/input"]
-    ).add_pvolumes({"/pvc":vop.volume}).after(prep_output).apply(use_aws_secret('aws-secret', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'))
+    ).add_pvolumes({"/pvc":vop.volume}).apply(use_aws_secret('aws-secret', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')).after(prep_output)
 
     list_input = ls("/pvc/output").add_pvolumes({"/pvc":vop.volume}).after(train_output)
 
