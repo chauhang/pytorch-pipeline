@@ -80,10 +80,10 @@ def pytorch_cifar10():
             "/pvc/input/cifar10_train.py",
         ],
         output_data = ["/pvc/output/train/models"],
-        input_parameters = [{"tensorboard_root": "s3://kubeflow-dataset/tensorboard",
+        input_parameters = [{"tensorboard_root": "s3://kubeflow-dataset/tensorboardX",
         "max_epochs": 1, "gpus": 0, "train_batch_size": None, "val_batch_size": None, "train_num_workers": 4, 
         "val_num_workers": 4 , "learning_rate": 0.001, 
-        "accelerator": None, "bucket_name": "kubeflow-dataset", "folder_name": "tensorboard"}],
+        "accelerator": None, "bucket_name": "kubeflow-dataset", "folder_name": "Cifar10Viz"}],
         source_code = ["https://kubeflow-dataset.s3.us-east-2.amazonaws.com/cifar10_datamodule.py", "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/cifar10_train.py", "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/utils.py"],
         source_code_path = ["/pvc/input"]
     ).add_pvolumes({"/pvc":vop.volume}).after(prep_output).apply(use_aws_secret('aws-secret', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'))
