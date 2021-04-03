@@ -95,5 +95,5 @@ class Visualization:
         if accuracy:
             self._visualize_accuracy_metric(accuracy=accuracy)
 
-        if confusion_matrix:
+        if confusion_matrix_dict:
             self._generate_confusion_matrix(confusion_matrix_dict=confusion_matrix_dict)
