@@ -251,23 +251,6 @@ def train_model(
     trainer.test()
     torch.save(model.state_dict(), os.path.join(model_save_path, "resnet.pth"))
 
-    confusion_matrix_dict = {
-        "actuals": trainer.model.target,
-        "prds": trainer.model.preds,
-        "bucket_name": bucket_name,
-        "folder_name": folder_name,
-    }
-
-    test_accuracy = round(float(trainer.model.test_acc.compute()), 2)
-
-    print("Generating Visualization")
-    print("Tensorboard Root Path: {}".format(tensorboard_root))
-    Visualization().generate_visualization(
-        tensorboard_root=tensorboard_root,
-        accuracy=test_accuracy,
-        confusion_matrix_dict=confusion_matrix_dict,
-    )
-
     if bucket_name:
         s3 = boto3.resource("s3")
         bucket_name = bucket_name
@@ -287,6 +270,24 @@ def train_model(
 
         with open("logdir.txt", "w") as f:
             f.write(s3_path)
+
+        print("Generating Visualization")
+        print("Tensorboard Root Path: {}".format(tensorboard_root))
+
+        confusion_matrix_dict = {
+            "actuals": trainer.model.target,
+            "prds": trainer.model.preds,
+            "bucket_name": bucket_name,
+            "folder_name": folder_name,
+        }
+
+        test_accuracy = round(float(trainer.model.test_acc.compute()), 2)
+
+        Visualization().generate_visualization(
+            tensorboard_root=s3_path,
+            accuracy=test_accuracy,
+            confusion_matrix_dict=confusion_matrix_dict,
+        )
 
 
 if __name__ == "__main__":
@@ -310,6 +311,8 @@ if __name__ == "__main__":
     learning_rate = input_parameters["learning_rate"]
     accelerator = input_parameters["accelerator"]
     gpus = input_parameters["gpus"]
+    bucket_name = input_parameters["bucket_name"]
+    folder_name = input_parameters["folder_name"]
 
     train_model(
         train_glob=data_set,
@@ -323,4 +326,6 @@ if __name__ == "__main__":
         val_num_workers=val_num_workers,
         learning_rate=learning_rate,
         accelerator=accelerator,
+        bucket_name=bucket_name,
+        folder_name=folder_name,
     )
