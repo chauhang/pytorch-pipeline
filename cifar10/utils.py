@@ -11,7 +11,7 @@ class Visualization:
     def __init__(self):
         self.parser_args = None
 
-    def _generate_confusion_matrix_metadata(self, confusion_matrix_path):
+    def _generate_confusion_matrix_metadata(self, confusion_matrix_path, vocab):
         print("Generating Confusion matrix Metadata")
         metadata = {
             "type": "confusion_matrix",
@@ -23,7 +23,7 @@ class Visualization:
             ],
             "source": confusion_matrix_path,
             # Convert vocab to string because for bealean values we want "True|False" to match csv data.
-            "labels": "vocab",
+            "labels": list(map(str, vocab)),
         }
         self._write_ui_metadata(
             metadata_filepath="/mlpipeline-ui-metadata.json", metadata_dict=metadata
@@ -48,6 +48,11 @@ class Visualization:
             "type": "tensorboard",
             "source": tensorboard_root,
         }
+
+        import os
+
+        os.environ["AWS_REGION"] = "us-east-2"
+
         self._write_ui_metadata(
             metadata_filepath="/mlpipeline-ui-metadata.json", metadata_dict=metadata
         )
@@ -65,23 +70,32 @@ class Visualization:
     def _generate_confusion_matrix(self, confusion_matrix_dict):
         actuals = confusion_matrix_dict["actuals"]
         preds = confusion_matrix_dict["preds"]
+
         bucket_name = confusion_matrix_dict["bucket_name"]
         folder_name = confusion_matrix_dict["folder_name"]
 
         # Generating confusion matrix
-        confusion_matrix_output = confusion_matrix(actuals, preds)
-        confusion_matrix_df = pd.DataFrame(confusion_matrix_output)
+        df = pd.DataFrame(list(zip(actuals, preds)), columns=["target", "predicted"])
+        vocab = list(df["target"].unique())
+        cm = confusion_matrix(df["target"], df["predicted"], labels=vocab)
+        data = []
+        for target_index, target_row in enumerate(cm):
+            for predicted_index, count in enumerate(target_row):
+                data.append((vocab[target_index], vocab[predicted_index], count))
+
+        confusion_matrix_df = pd.DataFrame(data, columns=["target", "predicted", "count"])
+
         confusion_matrix_key = os.path.join(folder_name, "confusion_df.csv")
 
         # Logging confusion matrix to ss3
         csv_buffer = StringIO()
-        confusion_matrix_df.to_csv(csv_buffer)
+        confusion_matrix_df.to_csv(csv_buffer, index=False, header=False)
         s3_resource = boto3.resource("s3")
         s3_resource.Object(bucket_name, confusion_matrix_key).put(Body=csv_buffer.getvalue())
 
         # Generating metadata
         confusion_matrix_s3_path = s3_path = "s3://" + bucket_name + "/" + confusion_matrix_key
-        self._generate_confusion_matrix_metadata(confusion_matrix_s3_path)
+        self._generate_confusion_matrix_metadata(confusion_matrix_s3_path, vocab)
 
     def generate_visualization(
         self, tensorboard_root=None, accuracy=None, confusion_matrix_dict=None
