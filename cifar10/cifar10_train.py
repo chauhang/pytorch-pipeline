@@ -275,11 +275,31 @@ def train_model(
         print("Generating Visualization")
         print("Tensorboard Root Path: {}".format(tensorboard_root))
 
+        classes = [
+            "airplane",
+            "automobile",
+            "bird",
+            "cat",
+            "deer",
+            "dog",
+            "frog",
+            "horse",
+            "ship",
+            "truck",
+        ]
+
+        target_index_list = list(set(trainer.model.target))
+
+        vocab = []
+        for index in target_index_list:
+            vocab.append(classes[index])
+
         confusion_matrix_dict = {
             "actuals": trainer.model.target,
             "preds": trainer.model.preds,
             "bucket_name": bucket_name,
             "folder_name": folder_name,
+            "vocab": vocab,
         }
 
         test_accuracy = round(float(trainer.model.test_acc.compute()), 2)
