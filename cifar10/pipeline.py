@@ -25,7 +25,7 @@ deploy_op = load_component_from_file("./deploy/component.yaml")
 @dsl.pipeline(name="Training pipeline", description="Sample training job test")
 def pytorch_cifar10():
 
-    namespace = "admin"
+    namespace = "kubeflow"
     volume_name = "pvcm"
     model_name = "torchserve-resnet"
     
