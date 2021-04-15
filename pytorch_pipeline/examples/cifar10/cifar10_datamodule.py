@@ -133,7 +133,7 @@ class CIFAR10DataModule(pl.LightningDataModule):
         """
         self.train_data_loader = self.create_data_loader(
             self.train_dataset,
-            self.args.get("train_batch_size", 4),
+            self.args.get("train_batch_size", None),
             self.args.get("train_num_workers", 4),
         )
         return self.train_data_loader
@@ -144,7 +144,7 @@ class CIFAR10DataModule(pl.LightningDataModule):
         """
         self.val_data_loader = self.create_data_loader(
             self.valid_dataset,
-            self.args.get("val_batch_size", 4),
+            self.args.get("val_batch_size", None),
             self.args.get("val_num_workers", 4),
         )
         return self.val_data_loader
@@ -154,6 +154,6 @@ class CIFAR10DataModule(pl.LightningDataModule):
         :return: output - Test data loader for the given input
         """
         self.test_data_loader = self.create_data_loader(
-            self.test_dataset, self.args.get("val_batch_size", 4), self.args.get("val_num_workers", 4)
+            self.test_dataset, self.args.get("val_batch_size", None), self.args.get("val_num_workers", 4)
         )
         return self.test_data_loader
