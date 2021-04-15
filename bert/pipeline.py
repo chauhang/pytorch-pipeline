@@ -115,7 +115,7 @@ def pytorch_bert():
         model_uri="pvc://{{workflow.name}}-%s/output" % volume_name,
         namespace="%s" % namespace,
         framework='pytorch'
-    ).after(list_output)
+    ).add_pvolumes({"/pvc":vop.volume}).after(list_output)
 
     # Below example runs model archiver as init container for the deployer task
     # deployer_task = dsl.ContainerOp(

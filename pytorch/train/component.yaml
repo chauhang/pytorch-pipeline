@@ -14,7 +14,7 @@ inputs:
  
 implementation:
   container:
-    image: jagadeeshj/testingbert:05-03-2021-13-52-23.171065
+    image: jagadeeshj/testingbert:16-03-2021-13-51-52.237453
     command: ["python3", "/component/train/src/train_process.py"]
     args:
     - --input_data
