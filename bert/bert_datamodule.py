@@ -3,7 +3,6 @@
 # pylint: disable=abstract-method
 import os
 from argparse import ArgumentParser
-
 import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
@@ -28,6 +27,7 @@ from pathlib import Path
 import boto3
 from botocore.exceptions import ClientError
 import shutil
+
 
 class NewsDataset(Dataset):
     def __init__(self, reviews, targets, tokenizer, max_length):
@@ -62,8 +62,7 @@ class NewsDataset(Dataset):
         """
         review = str(self.reviews[item])
         target = self.targets[item]
-
-        encoding = self.tokenizer.encode_plus(
+        encoded = self.tokenizer.encode_plus(
             review,
             add_special_tokens=True,
             max_length=self.max_length,
@@ -76,8 +75,8 @@ class NewsDataset(Dataset):
 
         return {
             "review_text": review,
-            "input_ids": encoding["input_ids"].flatten(),
-            "attention_mask": encoding["attention_mask"].flatten(),
+            "input_ids": encoded["input_ids"].flatten(),
+            "attention_mask": encoded["attention_mask"].flatten(),
             "targets": torch.tensor(target, dtype=torch.long),
         }
 
