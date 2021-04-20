@@ -26,16 +26,12 @@ import json
 
 if __name__ == "__main__":
 
-    ap = argparse.ArgumentParser()
+    import sys
+    import json
 
-    # Add the arguments to the parser
-    ap.add_argument("-d", "--data_set", required=True, help="first operand")
-    ap.add_argument("-o", "--output_path", required=False, help="second operand")
-    args = vars(ap.parse_args())
+    data_set = json.loads(sys.argv[1])[0]["dataset_url"]
+    output_path = json.loads(sys.argv[2])[0]
 
-    data_set = json.loads(open(args["data_set"], "r").read())[0]["dataset_url"]
-
-    output_path = args["output_path"]
     Path(output_path).mkdir(parents=True, exist_ok=True)
 
     dataset_tar = download_from_url(data_set, root="./")
@@ -48,9 +44,3 @@ if __name__ == "__main__":
     entry_point = ["ls", "-R", output_path]
     run_code = subprocess.run(entry_point, stdout=subprocess.PIPE)
     print(run_code.stdout)
-
-    # for root, dirs, files in os.walk(".", topdown = False):
-    #     for name in files:
-    #         print(os.path.join(root, name))
-    #     for name in dirs:
-    #         print(os.path.join(root, name))
