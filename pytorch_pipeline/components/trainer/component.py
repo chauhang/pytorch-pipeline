@@ -12,7 +12,8 @@ class Trainer(BaseComponent):
                  trainer_fn: Optional = None,
                  run_fn: Optional = None,
                  data_module_args: Optional[Dict] = None,
-                 module_file_args: Optional[Dict] = None
+                 module_file_args: Optional[Dict] = None,
+                 trainer_args: Optional[Dict] = None
                  ):
         super(BaseComponent, self).__init__()
         if [bool(module_file), bool(run_fn), bool(trainer_fn)].count(True) != 1:
@@ -43,7 +44,8 @@ class Trainer(BaseComponent):
                 model_class=model_class,
                 data_module_class=data_module_class,
                 data_module_args=data_module_args,
-                module_file_args=module_file_args
+                module_file_args=module_file_args,
+                trainer_args=trainer_args
             )
         #
         # elif run_fn:
