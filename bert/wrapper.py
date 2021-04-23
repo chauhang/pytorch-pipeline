@@ -54,5 +54,4 @@ class AGNewsmodelWrapper(nn.Module):
         output = F.relu(self.model.fc1(pooled_output))
         output = self.model.drop(output)
         output = self.model.out(output)
-        print("shape of final output", output.shape)
         return output

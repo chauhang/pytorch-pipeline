@@ -48,11 +48,11 @@ class NewsClassifierHandler(BaseHandler):
         if not os.path.isfile(model_def_path):
             raise RuntimeError("Missing the model definition file")
 
-        self.VOCAB_FILE = os.path.join(model_dir, "bert_base_uncased_vocab.txt")
+        self.VOCAB_FILE = os.path.join(model_dir, "bert-base-uncased-vocab.txt")
         if not os.path.isfile(self.VOCAB_FILE):
             raise RuntimeError("Missing the vocab file")
 
-        self.class_mapping_file = os.path.join(model_dir, "class_mapping.json")
+        self.class_mapping_file = os.path.join(model_dir, "index_to_name.json")
 
         state_dict = torch.load(model_pt_path, map_location=self.device)
         self.model = BertNewsClassifier()
@@ -123,7 +123,7 @@ class NewsClassifierHandler(BaseHandler):
     ):
         attributions = attributions.sum(dim=2).squeeze(0)
         attributions = attributions / torch.norm(attributions)
-        attributions = attributions.detach().numpy()
+        attributions = attributions.cpu().detach().numpy()
 
         # storing couple samples in an array for visualization purposes
         vis_data_records.append(
@@ -141,7 +141,7 @@ class NewsClassifierHandler(BaseHandler):
 
     def score_func(self, o):
         output = F.softmax(o, dim=1)
-        pre_pro = np.max(output.detach().numpy())
+        pre_pro = np.argmax(output.cpu().detach())
         return pre_pro
 
     def summarize_attributions(self, attributions):
@@ -154,45 +154,6 @@ class NewsClassifierHandler(BaseHandler):
         attributions = attributions.sum(dim=-1).squeeze(0)
         attributions = attributions / torch.norm(attributions)
         return attributions
-
-    def interpret_sentence(model_wrapper, ig, sentence, target=1):
-        vis_data_records_ig = []
-
-        model_wrapper.eval()
-        model_wrapper.zero_grad()
-
-        text_ref = "PAD PAD PAD PAD PAD"
-        input_id_ref = torch.tensor([tokenizer.encode(text_ref, add_special_tokens=True)])
-        input_embedding_ref = model_wrapper.model.bert_model.embeddings(input_id_ref)
-
-        input_ids = torch.tensor([tokenizer.encode(sentence, add_special_tokens=True)])
-        input_embedding = model_wrapper.model.bert_model.embeddings(input_ids)
-
-        # predict
-        preds = model_wrapper(input_embedding)
-        out = np.argmax(preds.cpu().detach(), axis=1)
-        pred_class = out.item()
-
-        output = F.softmax(preds, dim=1)
-        pred_prob = np.max(output.detach().numpy())
-
-        # compute attributions and approximation delta using integrated gradients
-        attributions_ig, delta = ig.attribute(
-            input_embedding,
-            n_steps=500,
-            return_convergence_delta=True,
-            baselines=input_embedding_ref,
-            target=1,
-        )
-
-        print("pred: ", out, "(", "%.2f" % pred_prob, ")", ", delta: ", abs(delta))
-
-        tokens = tokenizer.convert_ids_to_tokens(input_ids[0].numpy().tolist())
-        add_attributions_to_visualizer(
-            attributions_ig, tokens, pred_prob, pred_class, 2, target, delta, vis_data_records_ig
-        )
-        visualization.visualize_text(vis_data_records_ig)
-        print(visualization.visualize_text(vis_data_records_ig))
 
     def explain_handle(self, model_wraper, text, target=1):
         """Captum explanations handler
@@ -221,17 +182,4 @@ class NewsClassifierHandler(BaseHandler):
         attributions_sum = self.summarize_attributions(attributions)
         feature_imp_dict["importances"] = attributions_sum.tolist()
         feature_imp_dict["delta"] = delta[0].tolist()
-        # self.interpret_sentence(model_wrapper,ig_1,text,target)
-        self.add_attributions_to_visualizer(
-            attributions,
-            tokens,
-            self.score_func(preds),
-            out,
-            2,
-            target,
-            delta,
-            vis_data_records_base,
-        )
-        visualization.visualize_text(vis_data_records_base)
-        print(type(visualization.visualize_text(vis_data_records_base)))
         return [feature_imp_dict]

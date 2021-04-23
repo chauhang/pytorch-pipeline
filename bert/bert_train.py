@@ -285,7 +285,7 @@ if __name__ == "__main__":
 
     data_set = json.loads(sys.argv[1])[0]
     output_path = json.loads(sys.argv[2])[0]
-    input_parameters = json.loads(sys.argv[1])[0]
+    input_parameters = json.loads(sys.argv[3])[0]
 
     print("INPUT_PARAMETERS:::")
     print(input_parameters)
