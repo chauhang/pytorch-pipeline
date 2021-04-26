@@ -7,10 +7,9 @@ from sklearn.model_selection import train_test_split
 
 if __name__ == "__main__":
 
-    import json
     import subprocess
 
-    output_path = json.loads(sys.argv[2])[0]
+    output_path = sys.argv[1]
 
     trainset = torchvision.datasets.CIFAR10(root="./", train=True, download=True)
     testset = torchvision.datasets.CIFAR10(root="./", train=False, download=True)
