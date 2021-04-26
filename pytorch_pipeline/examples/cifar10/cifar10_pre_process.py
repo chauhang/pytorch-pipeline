@@ -1,4 +1,5 @@
 import sys
+import subprocess
 from pathlib import Path
 
 import torchvision
@@ -6,10 +7,9 @@ import webdataset as wds
 from sklearn.model_selection import train_test_split
 
 if __name__ == "__main__":
-
-    import subprocess
-
     output_path = sys.argv[1]
+
+    Path(output_path).mkdir(parents=True, exist_ok=True)
 
     trainset = torchvision.datasets.CIFAR10(root="./", train=True, download=True)
     testset = torchvision.datasets.CIFAR10(root="./", train=False, download=True)
