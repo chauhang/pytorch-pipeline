@@ -1,13 +1,20 @@
-import sys
 import subprocess
 from pathlib import Path
 
 import torchvision
 import webdataset as wds
 from sklearn.model_selection import train_test_split
+from argparse import ArgumentParser
 
 if __name__ == "__main__":
-    output_path = sys.argv[1]
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--output_data",
+        type=str
+    )
+
+    args = vars(parser.parse_args())
+    output_path = args["output_data"]
 
     Path(output_path).mkdir(parents=True, exist_ok=True)
 
