@@ -33,6 +33,13 @@ parser.add_argument(
     help="Cifar10 Dataset path (default: output/processing)",
 )
 
+parser.add_argument(
+    "--model_name",
+    type=str,
+    default="resnet.pth",
+    help="Name of the model to be saved as (default: resnet.pth)",
+)
+
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
 args = vars(parser.parse_args())
@@ -63,14 +70,12 @@ trainer_args = {
     "logger": tboard,
     "checkpoint_callback": True,
     "max_epochs": max_epochs,
-    "callbacks": [lr_logger, early_stopping, checkpoint_callback]
+    "callbacks": [lr_logger, early_stopping, checkpoint_callback],
 }
 
 
 # Setting the datamodule specific arguments
-data_module_args = {
-    "train_glob": args["dataset_path"]
-}
+data_module_args = {"train_glob": args["dataset_path"]}
 
 
 # Initiating the training process
@@ -79,6 +84,5 @@ trainer = Trainer(
     data_module_file="cifar10_datamodule.py",
     module_file_args=parser,
     data_module_args=data_module_args,
-    trainer_args=trainer_args
+    trainer_args=trainer_args,
 )
-
