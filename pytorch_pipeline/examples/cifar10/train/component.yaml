@@ -11,7 +11,7 @@ outputs:
   
 implementation:
   container:
-    image: jagadeeshj/pytorch_pipeline:v1.11
+    image: jagadeeshj/pytorch_pipeline:v1.19
     command: ["python3", "pytorch_pipeline/examples/cifar10/cifar10_pytorch.py"]
     args:
     - --dataset_path
@@ -20,4 +20,4 @@ implementation:
     - {outputPath: tensorboard_root}
     - --checkpoint_dir
     - {outputPath: checkpoint_dir}
-   
+

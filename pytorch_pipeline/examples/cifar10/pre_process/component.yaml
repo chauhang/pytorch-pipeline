@@ -7,10 +7,9 @@ outputs:
  
 implementation:
   container:
-    image: jagadeeshj/pytorch_pipeline:v1.11
+    image: jagadeeshj/pytorch_pipeline:v1.19
     command: ["python3", "pytorch_pipeline/examples/cifar10/cifar10_pre_process.py"] 
     args:
     - --output_data
     - {outputPath: output_data}
  
-   

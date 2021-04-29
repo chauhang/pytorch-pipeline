@@ -1,5 +1,7 @@
 import pytorch_lightning as pl
+import os
 from pytorch_pipeline.components.trainer.component import Trainer
+from pytorch_pipeline.components.mar.mar_generation import MarGeneration
 from argparse import ArgumentParser
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import (
@@ -86,3 +88,18 @@ trainer = Trainer(
     data_module_args=data_module_args,
     trainer_args=trainer_args,
 )
+
+
+# Mar file generation
+
+mar_config = {
+    "MODEL_NAME": "cifar10_test",
+    "MODEL_FILE": "pytorch_pipeline/examples/cifar10/cifar10_train.py",
+    "HANDLER": "image_classifier",
+    "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
+    "VERSION": "1",
+    "EXPORT_PATH": args["checkpoint_dir"],
+    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties"
+}
+
+MarGeneration(mar_config=mar_config).generate_mar_file()
