@@ -98,7 +98,8 @@ mar_config = {
     "HANDLER": "image_classifier",
     "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
     "VERSION": "1",
-    "EXPORT_PATH": args["checkpoint_dir"]
+    "EXPORT_PATH": args["checkpoint_dir"],
+    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties"
 }
 
 MarGeneration(mar_config=mar_config).generate_mar_file()

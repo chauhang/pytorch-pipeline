@@ -14,3 +14,4 @@ numpy
 s3fs
 wget
 torch-model-archiver
+minio
