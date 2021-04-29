@@ -116,10 +116,14 @@ class MarGeneration:
             )
 
         print("Uploading config properties to minio")
-        self.minio_client.upload_artifact_to_minio(artifact=config_properties_local_path)
+        self.minio_client.upload_artifact_to_minio(
+            folder="mar/config", artifact=config_properties_local_path
+        )
 
         print("Uploading mar file to minio")
-        self.minio_client.upload_artifact_to_minio(artifact=mar_file_local_path)
+        self.minio_client.upload_artifact_to_minio(
+            folder="mar/model-store", artifact=mar_file_local_path
+        )
 
 
 # if __name__ == "__main__":

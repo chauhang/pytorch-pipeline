@@ -29,11 +29,11 @@ class LibMinio:
         client = Minio(minio_host, access_key=access_key, secret_key=secret_key, secure=False)
         return client
 
-    def upload_artifact_to_minio(self, artifact: str):
+    def upload_artifact_to_minio(self, folder: str, artifact: str):
         artifact_name = artifact.split("/")[-1]
         result = self.client.fput_object(
             self.minio_config["BUCKET"],
-            os.path.join(self.minio_config["FOLDER"], artifact_name),
+            os.path.join(folder, artifact_name),
             artifact,
         )
         print(result)
