@@ -42,6 +42,13 @@ parser.add_argument(
     help="Name of the model to be saved as (default: resnet.pth)",
 )
 
+parser.add_argument(
+    "--minio_path",
+    type=str,
+    default="tensorboard/version_0",
+    help="Path to upload files to minio (default: tensorboard/version_0)",
+)
+
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
 args = vars(parser.parse_args())
@@ -101,5 +108,6 @@ mar_config = {
     "EXPORT_PATH": args["checkpoint_dir"],
     "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties"
 }
+
 
 MarGeneration(mar_config=mar_config).generate_mar_file()

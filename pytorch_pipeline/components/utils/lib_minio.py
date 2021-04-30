@@ -11,6 +11,7 @@ class LibMinio:
         self.client = self._initiate_minio_client()
 
     def _use_default_config(self):
+        # TODO: read the default config from secret manager
         print("Using Default minio config")
         minio_config = {
             "HOST": "minio-service.kubeflow:9000",
