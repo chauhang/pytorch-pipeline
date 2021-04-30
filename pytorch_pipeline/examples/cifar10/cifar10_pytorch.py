@@ -46,7 +46,7 @@ parser.add_argument(
     "--minio_path",
     type=str,
     default="tensorboard/version_0",
-    help="Path to upload files to minio (default: tensorboard_version)",
+    help="Path to upload files to minio (default: tensorboard/version_0)",
 )
 
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
