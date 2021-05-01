@@ -49,6 +49,7 @@ parser.add_argument(
     help="Path to upload files to minio (default: tensorboard/version_0)",
 )
 
+
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
 args = vars(parser.parse_args())
@@ -82,6 +83,9 @@ trainer_args = {
     "callbacks": [lr_logger, early_stopping, checkpoint_callback],
 }
 
+
+if "profiler" in args:
+    trainer_args["profiler"] = args["profiler"]
 
 # Setting the datamodule specific arguments
 data_module_args = {"train_glob": args["dataset_path"]}
