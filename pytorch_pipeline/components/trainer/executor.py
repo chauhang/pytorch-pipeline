@@ -53,9 +53,6 @@ class Executor(GenericExecutor):
 
             if "minio_path" in args:
                 for root, dirs, files in os.walk(args["tensorboard_root"]):
-                    print("Root: ", root)
-                    print("Dirs: ", dirs)
-                    print("Files: ", files)
                     for file in files:
                         print(os.path.join(root, file))
                         LibMinio().upload_artifact_to_minio(folder=args["minio_path"], artifact=os.path.join(root, file))
