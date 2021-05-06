@@ -8,9 +8,9 @@ outputs:
 implementation:
   container:
     image: jagadeeshj/pytorch_pipeline:v1.33
-    command: ["python3", "pytorch_pipeline/examples/cifar10/cifar10_pre_process.py"] 
+    command: ["python3", "pytorch_pipeline/examples/bert/bert_pre_process.py"] 
     args:
-    - --output_data
+    - --output_path
     - {outputPath: output_data}
  
    

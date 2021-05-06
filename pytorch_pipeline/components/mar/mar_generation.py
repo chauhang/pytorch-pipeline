@@ -1,7 +1,9 @@
 import os
+import shutil
 import wget
 import tempfile
 import subprocess
+from pathlib import Path
 from pytorch_pipeline.components.utils.lib_minio import LibMinio
 
 
@@ -57,7 +59,7 @@ class MarGeneration:
             url = wget.download(url, self.tmp_dirpath)
         return url
 
-    def generate_mar_file(self):
+    def generate_mar_file(self, mar_save_path):
 
         self._validate_mar_config()
 
@@ -74,12 +76,14 @@ class MarGeneration:
         )
 
         if "EXPORT_PATH" in self.mar_config:
-            archiver_cmd += " --export-path {EXPORT_PATH}".format(
-                EXPORT_PATH=self.mar_config["EXPORT_PATH"]
-            )
+            export_path = self.mar_config["EXPORT_PATH"]
+            if not os.path.exists(export_path):
+                Path(export_path).mkdir(parents=True, exist_ok=True)
+
+            archiver_cmd += " --export-path {EXPORT_PATH}".format(EXPORT_PATH=export_path)
 
         if "EXTRA_FILES" in self.mar_config:
-            archiver_cmd += " --extra_files {EXTRA_FILES}".format(
+            archiver_cmd += " --extra-files {EXTRA_FILES}".format(
                 EXTRA_FILES=self.mar_config["EXTRA_FILES"]
             )
 
@@ -98,6 +102,28 @@ class MarGeneration:
             print(error_msg)
             raise Exception("Unable to create mar file: {error_msg}".format(error_msg=error_msg))
 
+        # If user has provided the export path
+        # By default, torch-model-archiver generates the mar file inside the export path
+
+        # If the user has not provieded the export path
+        # mar file will be generated in the current working directory
+        # The mar file needs to be moved into mar_save_path
+
+        if "EXPORT_PATH" not in self.mar_config:
+            mar_file_local_path = os.path.join(
+                os.getcwd(), "{}.mar".format(self.mar_config["MODEL_NAME"])
+            )
+            if not Path(mar_save_path).exists():
+                Path(mar_save_path).mkdir(parents=True, exist_ok=True)
+            shutil.move(mar_file_local_path, mar_save_path)
+
+        elif self.mar_config["EXPORT_PATH"] != mar_save_path:
+            raise Exception(
+                "The export path [{}] needs to be same as mar save path [{}] ".format(
+                    self.mar_config["EXPORT_PATH"], mar_save_path
+                )
+            )
+
         print("Downloading config properties")
         if "CONFIG_PROPERTIES" in self.mar_config:
             config_properties_local_path = self.download_config_properties(
@@ -106,33 +132,4 @@ class MarGeneration:
         else:
             config_properties_local_path = self.mar_config["CONFIG_PROPERTIES"]
 
-        if "EXPORT_PATH" in self.mar_config:
-            mar_file_local_path = os.path.join(
-                self.mar_config["EXPORT_PATH"], "{}.mar".format(self.mar_config["MODEL_NAME"])
-            )
-        else:
-            mar_file_local_path = os.path.join(
-                os.getcwd(), "{}.mar".format(self.mar_config["MODEL_NAME"])
-            )
-
-        print("Uploading config properties to minio")
-        self.minio_client.upload_artifact_to_minio(
-            folder="mar/config", artifact=config_properties_local_path
-        )
-
-        print("Uploading mar file to minio")
-        self.minio_client.upload_artifact_to_minio(
-            folder="mar/model-store", artifact=mar_file_local_path
-        )
-
-
-# if __name__ == "__main__":
-#     mar_config = {
-#         "MODEL_NAME": "cifar10_test",
-#         "MODEL_FILE": "examples/cifar10/cifar10_train.py",
-#         "HANDLER": "image_classifier",
-#         "SERIALIZED_FILE": "examples/cifar10/output/train/models/resnet.pth",
-#         "VERSION": "2",
-#         "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties"
-#     }
-#     MarGeneration().generate_mar_file()
+        shutil.move(config_properties_local_path, mar_save_path)

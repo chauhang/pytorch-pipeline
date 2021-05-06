@@ -38,8 +38,8 @@ parser.add_argument(
 parser.add_argument(
     "--model_name",
     type=str,
-    default="resnet.pth",
-    help="Name of the model to be saved as (default: resnet.pth)",
+    default="bert.pth",
+    help="Name of the model to be saved as (default: bert.pth)",
 )
 
 
@@ -77,17 +77,19 @@ trainer_args = {
 }
 
 
-if "profiler" in args:
-    trainer_args["profiler"] = args["profiler"]
+# if "profiler" in args:
+#     trainer_args["profiler"] = args["profiler"]
 
 # Setting the datamodule specific arguments
-data_module_args = {"train_glob": args["dataset_path"]}
+data_module_args = {
+    "train_glob": args["dataset_path"],
+}
 
 
 # Initiating the training process
 trainer = Trainer(
-    module_file="cifar10_train.py",
-    data_module_file="cifar10_datamodule.py",
+    module_file="bert_train.py",
+    data_module_file="bert_datamodule.py",
     module_file_args=parser,
     data_module_args=data_module_args,
     trainer_args=trainer_args,
@@ -97,13 +99,14 @@ trainer = Trainer(
 # Mar file generation
 
 mar_config = {
-    "MODEL_NAME": "cifar10_test",
-    "MODEL_FILE": "pytorch_pipeline/examples/cifar10/cifar10_train.py",
-    "HANDLER": "image_classifier",
+    "MODEL_NAME": "bert_test",
+    "MODEL_FILE": "pytorch_pipeline/examples/bert/bert_train.py",
+    "HANDLER": "pytorch_pipeline/examples/bert/bert_handler.py",
     "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
     "VERSION": "1",
     "EXPORT_PATH": args["checkpoint_dir"],
-    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties",
+    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/bert/config.properties",
+    "EXTRA_FILES": "pytorch_pipeline/examples/bert/bert-base-uncased-vocab.txt,pytorch_pipeline/examples/bert/index_to_name.json,pytorch_pipeline/examples/bert/wrapper.py",
 }
 
 

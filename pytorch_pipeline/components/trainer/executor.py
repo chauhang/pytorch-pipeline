@@ -45,14 +45,3 @@ class Executor(GenericExecutor):
             model_save_path = os.path.join(model_save_path, model_name)
             print("Saving model to {}".format(model_save_path))
             torch.save(model.state_dict(), model_save_path)
-
-
-            # TODO: Create a separate component for minio upload and perform the upload activity
-            # Once the training process is complete, copy the tensorboard files
-            # from local to minio
-
-            if "minio_path" in args:
-                for root, dirs, files in os.walk(args["tensorboard_root"]):
-                    for file in files:
-                        print(os.path.join(root, file))
-                        LibMinio().upload_artifact_to_minio(folder=args["minio_path"], artifact=os.path.join(root, file))
