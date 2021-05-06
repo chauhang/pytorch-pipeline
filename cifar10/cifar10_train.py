@@ -1,17 +1,14 @@
-import logging
+import os
 import os
 import shutil
-from itertools import islice
 from pathlib import Path
-from random import sample
 
+import boto3
+import matplotlib.pyplot as plt
 import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
-import torchvision
-import webdataset as wds
-from PIL import Image
 from pytorch_lightning.callbacks import (
     EarlyStopping,
     LearningRateMonitor,
@@ -20,12 +17,9 @@ from pytorch_lightning.callbacks import (
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.metrics import Accuracy
 from torch import nn
-from torch.multiprocessing import Queue
-from torch.utils.data import DataLoader, IterableDataset
-from torchvision import models, transforms
-import boto3
-from botocore.exceptions import ClientError
-import matplotlib.pyplot as plt
+from torchvision import models
+from utils import Visualization
+
 
 class CIFAR10Classifier(pl.LightningModule):
     def __init__(self, **kwargs):
@@ -48,6 +42,9 @@ class CIFAR10Classifier(pl.LightningModule):
         self.val_acc = Accuracy()
         self.test_acc = Accuracy()
 
+        self.preds = []
+        self.target = []
+
     def forward(self, x):
         out = self.model_conv(x)
         return out
@@ -55,7 +52,7 @@ class CIFAR10Classifier(pl.LightningModule):
     def training_step(self, train_batch, batch_idx):
         if batch_idx == 0:
             self.reference_image = (train_batch[0][0]).unsqueeze(0)
-            #self.reference_image.resize((1,1,28,28))
+            # self.reference_image.resize((1,1,28,28))
             print("\n\nREFERENCE IMAGE!!!")
             print(self.reference_image.shape)
         x, y = train_batch
@@ -78,6 +75,9 @@ class CIFAR10Classifier(pl.LightningModule):
         else:
             self.log("test_loss", loss)
         self.test_acc(y_hat, y)
+        self.preds += y_hat.tolist()
+        self.target += y.tolist()
+
         self.log("test_acc", self.test_acc.compute())
         return {"test_acc": self.test_acc.compute()}
 
@@ -98,7 +98,6 @@ class CIFAR10Classifier(pl.LightningModule):
     def configure_optimizers(self):
         """
         Initializes the optimizer and learning rate scheduler
-
         :return: output - Initialized optimizer and scheduler
         """
         self.optimizer = torch.optim.Adam(self.parameters(), lr=self.args["lr"])
@@ -144,17 +143,15 @@ class CIFAR10Classifier(pl.LightningModule):
         # logging layer 1 activations
         out = self.model_conv.conv1(x)
         c = self.makegrid(out, 4)
-        self.logger.experiment.add_image(
-            "layer 1", c, self.current_epoch, dataformats="HW"
-        )
+        self.logger.experiment.add_image("layer 1", c, self.current_epoch, dataformats="HW")
 
     def training_epoch_end(self, outputs):
         self.showActivations(self.reference_image)
 
         # Logging graph
-        if(self.current_epoch==0):
-            sampleImg=torch.rand((1,3,64,64))
-            self.logger.experiment.add_graph(CIFAR10Classifier(),sampleImg)
+        if self.current_epoch == 0:
+            sampleImg = torch.rand((1, 3, 64, 64))
+            self.logger.experiment.add_graph(CIFAR10Classifier(), sampleImg)
 
 
 def train_model(
@@ -168,7 +165,9 @@ def train_model(
     val_num_workers: int,
     learning_rate: int,
     accelerator: str,
-    model_save_path: str
+    model_save_path: str,
+    bucket_name: str = None,
+    folder_name: str = None,
 ):
 
     if accelerator == "None":
@@ -203,14 +202,13 @@ def train_model(
     )
 
     from cifar10_datamodule import CIFAR10DataModule
+
     dm = CIFAR10DataModule(**dict_args)
     dm.prepare_data()
     dm.setup(stage="fit")
 
     model = CIFAR10Classifier(**dict_args)
-    early_stopping = EarlyStopping(
-        monitor="val_loss", mode="min", patience=5, verbose=True
-    )
+    early_stopping = EarlyStopping(monitor="val_loss", mode="min", patience=5, verbose=True)
 
     Path(model_save_path).mkdir(parents=True, exist_ok=True)
 
@@ -228,7 +226,7 @@ def train_model(
         save_top_k=1,
         verbose=True,
         monitor="val_loss",
-        mode="min"
+        mode="min",
     )
 
     if os.path.exists(os.path.join(tensorboard_root, "cifar10_lightning_kubeflow")):
@@ -237,7 +235,8 @@ def train_model(
     Path(tensorboard_root).mkdir(parents=True, exist_ok=True)
 
     # Tensorboard root name of the logging directory
-    tboard = TensorBoardLogger(tensorboard_root, "cifar10_lightning_kubeflow")
+    tboard_run_name = "cifar10_lightning_kubeflow"
+    tboard = TensorBoardLogger(tensorboard_root, tboard_run_name)
     lr_logger = LearningRateMonitor()
 
     trainer = pl.Trainer(
@@ -251,7 +250,65 @@ def train_model(
 
     trainer.fit(model, dm)
     trainer.test()
-    torch.save(model.state_dict(), os.path.join(model_save_path, 'resnet.pth'))
+    torch.save(model.state_dict(), os.path.join(model_save_path, "resnet.pth"))
+
+    if bucket_name:
+        # s3 = boto3.resource("s3")
+        # bucket_name = bucket_name
+        # folder_name = folder_name
+        # bucket = s3.Bucket(bucket_name)
+        # s3_path = "s3://" + bucket_name + "/" + folder_name
+        #
+        # for obj in bucket.objects.filter(Prefix=folder_name + "/"):
+        #     s3.Object(bucket.name, obj.key).delete()
+        #
+        # for event_file in os.listdir(tensorboard_root + "/cifar10_lightning_kubeflow/version_0"):
+        #     s3.Bucket(bucket_name).upload_file(
+        #         tensorboard_root + "/cifar10_lightning_kubeflow/version_0/" + event_file,
+        #         folder_name + "/" + event_file,
+        #         ExtraArgs={"ACL": "public-read"},
+        #     )
+        #
+        # with open("logdir.txt", "w") as f:
+        #     f.write(s3_path)
+
+        print("Generating Visualization")
+        print("Tensorboard Root Path: {}".format(tensorboard_root))
+
+        classes = [
+            "airplane",
+            "automobile",
+            "bird",
+            "cat",
+            "deer",
+            "dog",
+            "frog",
+            "horse",
+            "ship",
+            "truck",
+        ]
+
+        target_index_list = list(set(trainer.model.target))
+
+        vocab = []
+        for index in target_index_list:
+            vocab.append(classes[index])
+
+        confusion_matrix_dict = {
+            "actuals": trainer.model.target,
+            "preds": trainer.model.preds,
+            "bucket_name": bucket_name,
+            "folder_name": folder_name,
+            "vocab": vocab,
+        }
+
+        test_accuracy = round(float(trainer.model.test_acc.compute()), 2)
+
+        Visualization().generate_visualization(
+            tensorboard_root=os.path.join(tensorboard_root, tboard_run_name),
+            accuracy=test_accuracy,
+            confusion_matrix_dict=confusion_matrix_dict,
+        )
 
 
 if __name__ == "__main__":
@@ -266,16 +323,17 @@ if __name__ == "__main__":
     print("INPUT_PARAMETERS:::")
     print(input_parameters)
 
-    tensorboard_root = input_parameters['tensorboard_root']
-    max_epochs = input_parameters['max_epochs']
-    train_batch_size = input_parameters['train_batch_size']
-    val_batch_size = input_parameters['val_batch_size']
-    train_num_workers = input_parameters['train_num_workers']
-    val_num_workers = input_parameters['val_num_workers']
-    learning_rate = input_parameters['learning_rate']
-    accelerator = input_parameters['accelerator']
-    gpus = input_parameters['gpus']
-
+    tensorboard_root = input_parameters["tensorboard_root"]
+    max_epochs = input_parameters["max_epochs"]
+    train_batch_size = input_parameters["train_batch_size"]
+    val_batch_size = input_parameters["val_batch_size"]
+    train_num_workers = input_parameters["train_num_workers"]
+    val_num_workers = input_parameters["val_num_workers"]
+    learning_rate = input_parameters["learning_rate"]
+    accelerator = input_parameters["accelerator"]
+    gpus = input_parameters["gpus"]
+    bucket_name = input_parameters["bucket_name"]
+    folder_name = input_parameters["folder_name"]
 
     train_model(
         train_glob=data_set,
@@ -288,5 +346,7 @@ if __name__ == "__main__":
         train_num_workers=train_num_workers,
         val_num_workers=val_num_workers,
         learning_rate=learning_rate,
-        accelerator=accelerator
+        accelerator=accelerator,
+        bucket_name=bucket_name,
+        folder_name=folder_name,
     )

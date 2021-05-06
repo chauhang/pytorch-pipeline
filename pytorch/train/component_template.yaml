@@ -11,6 +11,9 @@ inputs:
   - {name: input_parameters, type: JsonArray, description: 'Configurable input parameters'}
   - {name: source_code, type: JsonArray, description: 'S3 path to download code'}
   - {name: source_code_path, type: JsonArray, description: 'local path to download code'}
+outputs:
+  - {name: MLPipeline UI metadata, type: UI metadata}
+  - {name: MLPipeline Metrics,     type: Metrics}
  
 implementation:
   container:
@@ -29,4 +32,6 @@ implementation:
     - {inputValue: source_code}
     - --source_code_path
     - {inputValue: source_code_path}
-   
+    fileOutputs:
+      MLPipeline UI metadata: /mlpipeline-ui-metadata.json
+      MLPipeline Metrics: /mlpipeline-metrics.json

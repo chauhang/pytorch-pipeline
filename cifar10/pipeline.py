@@ -25,7 +25,7 @@ deploy_op = load_component_from_file("./deploy/component.yaml")
 @dsl.pipeline(name="Training pipeline", description="Sample training job test")
 def pytorch_cifar10():
 
-    namespace = "admin"
+    namespace = "kubeflow"
     volume_name = "pvcm"
     model_name = "torchserve-resnet"
     
@@ -80,13 +80,13 @@ def pytorch_cifar10():
             "/pvc/input/cifar10_train.py",
         ],
         output_data = ["/pvc/output/train/models"],
-        input_parameters = [{"tensorboard_root": "/pvc/output/train/tensorboard", 
+        input_parameters = [{"tensorboard_root": "s3://kubeflow-dataset/tensorboardX",
         "max_epochs": 1, "gpus": 0, "train_batch_size": None, "val_batch_size": None, "train_num_workers": 4, 
         "val_num_workers": 4 , "learning_rate": 0.001, 
-        "accelerator": None}],
-        source_code = ["https://kubeflow-dataset.s3.us-east-2.amazonaws.com/cifar10_datamodule.py", "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/cifar10_train.py"],
+        "accelerator": None, "bucket_name": "kubeflow-dataset", "folder_name": "Cifar10Viz"}],
+        source_code = ["https://kubeflow-dataset.s3.us-east-2.amazonaws.com/cifar10_datamodule.py", "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/cifar10_train.py", "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/utils.py"],
         source_code_path = ["/pvc/input"]
-    ).add_pvolumes({"/pvc":vop.volume}).after(prep_output)
+    ).add_pvolumes({"/pvc":vop.volume}).apply(use_aws_secret('aws-secret', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')).after(prep_output)
 
     list_input = ls("/pvc/output").add_pvolumes({"/pvc":vop.volume}).after(train_output)
 

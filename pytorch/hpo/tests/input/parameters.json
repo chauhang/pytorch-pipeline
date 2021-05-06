@@ -1,0 +1,19 @@
+[{
+    "name": "lr",
+    "type": "range",
+    "bounds": [
+      1e-3, 0.15
+    ],
+    "log_scale": true
+  },
+  {
+    "name": "weight_decay",
+    "type": "range",
+    "bounds": [1e-4, 1e-3]
+  },
+  {
+    "name": "momentum",
+    "type": "range",
+    "bounds": [0.7, 1.0]
+  }
+]

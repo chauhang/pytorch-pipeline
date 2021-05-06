@@ -1,0 +1,21 @@
+name: Ax-HPO
+description: ax hyper parameter optimizer
+inputs:
+- {name: total_trials, type: String, default: ""}
+- {name: max_epochs, type: String, default: ""}
+- {name: model_file, type: String, default: ""}
+- {name: data_module_file, type: String, default: ""}
+- {name: params_file, type: String, default: ""}
+- {name: output_dir, type: String}
+implementation:
+  container:
+    image: jagadeeshj/ax-hpo:v1.0
+    command: ["python"]
+    arguments: [
+        -u, /component/src/ax_hpo.py,
+        "--max_epochs", {inputValue: max_epochs},
+        "--total_trials", {inputValue: total_trials},
+        "--model_file", {inputValue: model_file},
+        "--data_module_file", {inputValue: data_module_file},
+        "--params_file", {inputValue: params_file}
+    ]

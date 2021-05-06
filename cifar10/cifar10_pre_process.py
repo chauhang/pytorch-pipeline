@@ -1,18 +1,9 @@
-import sys, argparse, logging
-import os
-import torch.utils.data
-from PIL import Image
-import json
-import pandas as pd
-import numpy as np
-import torch
-import torchvision
-from torch.utils.data import DataLoader, Dataset
-import torchvision.transforms as transforms
-import webdataset as wds
+import sys
 from pathlib import Path
-from sklearn.model_selection import train_test_split
 
+import torchvision
+import webdataset as wds
+from sklearn.model_selection import train_test_split
 
 if __name__ == "__main__":
 
@@ -36,12 +27,11 @@ if __name__ == "__main__":
 
     for name in [(trainset, "train"), (valset, "val"), (testset, "test")]:
         with wds.ShardWriter(
-            output_path + "/" + str(name[1]) + "/" +  str(name[1]) + "-%d.tar", maxcount=1000
+            output_path + "/" + str(name[1]) + "/" + str(name[1]) + "-%d.tar", maxcount=1000
         ) as sink:
             for index, (image, cls) in enumerate(name[0]):
                 sink.write({"__key__": "%06d" % index, "ppm": image, "cls": cls})
 
-
-    entry_point=["ls", "-R", output_path]
+    entry_point = ["ls", "-R", output_path]
     run_code = subprocess.run(entry_point, stdout=subprocess.PIPE)
     print(run_code.stdout)
