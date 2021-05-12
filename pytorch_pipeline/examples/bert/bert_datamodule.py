@@ -47,7 +47,7 @@ class BertDataModule(pl.LightningDataModule):
         :param stage: Stage - training or testing
         """
 
-        num_samples = self.args.get("num_samples", 100)
+        num_samples = self.args.get("num_samples", 15000)
 
         data_path = self.args["train_glob"]
 
