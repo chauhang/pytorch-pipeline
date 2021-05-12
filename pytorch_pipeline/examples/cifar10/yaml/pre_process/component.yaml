@@ -1,0 +1,16 @@
+name: PreProcessData
+description: |
+  Prepare data for PyTorch training.
+
+outputs:
+  - {name: output_data, description: 'The path to the input datasets'}
+ 
+implementation:
+  container:
+    image: jagadeeshj/pytorch_pipeline:v1.33
+    command: ["python3", "pytorch_pipeline/examples/cifar10/cifar10_pre_process.py"] 
+    args:
+    - --output_data
+    - {outputPath: output_data}
+ 
+   

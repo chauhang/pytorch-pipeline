@@ -1,47 +1,38 @@
-#gcloud auth application-default login
+#!/bin/bash
 
-#adding GPU to KFP cluster:
-#1) add GPU node pool:
-# gcloud container node-pools create gpunodes3 --accelerator type=nvidia-tesla-k80,count=1 --zone us-central1-a  --num-nodes 1 --machine-type n1-highmem-8
-#2) add GPU driver installer deamonset:
-# kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
-
+## Generating current timestamp
 python3 gen_image_timestamp.py > curr_time.txt
 
 export images_tag=$(cat curr_time.txt)
 echo ++++ Building component images with tag=$images_tag
 
-cd ./pytorch
 
-full_image_name=jagadeeshj/testingbert:$images_tag
+full_image_name=jagadeeshj/pytorch_pipeline:$images_tag
 
 echo IMAGE TO BUILD: $full_image_name
 
-#cp ../gcs_utils.py ./
+export full_image_name=$full_image_name
 
-docker build -t $full_image_name .
+
+## build and push docker - to fetch the latest changes and install dependencies
+cd pytorch_pipeline
+
+docker build --no-cache -t $full_image_name .
 docker push $full_image_name
-
-for COMPONENT in data_prep train
-do
-    cd $COMPONENT
-    sed -e "s|__IMAGE_NAME__|$full_image_name|g" component_template.yaml > component.yaml
-    cat component.yaml 
-
-    cd ..
-done
 
 cd ..
 
-pwd
-echo
+## Update component.yaml files with the latest docker image name
+
+find $1 -name "*.yaml" | grep -v 'deploy' | grep -v "tensorboard"  | while read -d $'\n' file
+do
+    yq -i eval ".implementation.container.image =  \"$full_image_name\"" $file
+done
+
+
+## compile pipeline
+
 echo Running pipeline compilation
-# python3 pipeline.py --target mp
 echo "$1/pipeline.py"
-python3 "$1/pipeline.py" --target kfp --model $1
+python3 "$1/pipeline.py" --target kfp
 
-
-#echo
-#echo Deploying to Managed Platform
-
-#python3 deploy_to_managed.py

@@ -1,0 +1,23 @@
+name: Training
+description: |
+  Pytorch training
+
+inputs:
+  - {name: input_data}  
+
+outputs:
+  - {name: tensorboard_root}
+  - {name: checkpoint_dir}
+  
+  
+implementation:
+  container:
+    image: jagadeeshj/pytorch_pipeline:v1.33
+    command: ["python3", "pytorch_pipeline/examples/cifar10/cifar10_pytorch.py"]
+    args:
+    - --dataset_path
+    - {inputPath: input_data}
+    - --tensorboard_root
+    - {outputPath: tensorboard_root}
+    - --checkpoint_dir
+    - {outputPath: checkpoint_dir}
