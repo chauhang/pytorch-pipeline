@@ -100,7 +100,9 @@ class BertDataModule(pl.LightningDataModule):
         )
 
         return DataLoader(
-            ds, batch_size=self.args.get("batch_size", 4), num_workers=self.args.get("num_workers", 1)
+            ds,
+            batch_size=self.args.get("batch_size", 4),
+            num_workers=self.args.get("num_workers", 1),
         )
 
     def train_dataloader(self):
@@ -129,5 +131,3 @@ class BertDataModule(pl.LightningDataModule):
             self.df_test, self.tokenizer, self.MAX_LEN, self.args.get("batch_size", 4)
         )
         return self.test_data_loader
-
-

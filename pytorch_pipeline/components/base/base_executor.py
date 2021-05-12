@@ -3,7 +3,6 @@ from six import with_metaclass
 
 
 class BaseExecutor(with_metaclass(abc.ABCMeta, object)):
-
     def __init__(self):
         pass
 

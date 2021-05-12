@@ -1,6 +1,7 @@
 import abc
 from six import with_metaclass
 
+
 class BaseComponent(with_metaclass(abc.ABCMeta, object)):
     def __init__(self):
         pass

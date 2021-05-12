@@ -161,7 +161,7 @@ class BertNewsClassifier(pl.LightningModule):
 
         :return: output - Initialized optimizer and scheduler
         """
-        self.optimizer = AdamW(self.parameters(), lr=self.args.get("lr", 0.001) )
+        self.optimizer = AdamW(self.parameters(), lr=self.args.get("lr", 0.001))
         self.scheduler = {
             "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
                 self.optimizer,

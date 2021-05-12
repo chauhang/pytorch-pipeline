@@ -86,9 +86,7 @@ def pytorch_cifar10(
     )
 
     prep_task = prep_op().after(prepare_tb_task)
-    train_task = train_op(input_data=prep_task.outputs["output_data"]).after(
-        prep_task
-    )
+    train_task = train_op(input_data=prep_task.outputs["output_data"]).after(prep_task)
     minio_tb_upload = minio_op(
         bucket_name="mlpipeline",
         folder_name=log_dir,
@@ -131,4 +129,3 @@ def pytorch_cifar10(
 
 if __name__ == "__main__":
     kfp.compiler.Compiler().compile(pytorch_cifar10, package_path="pytorch_cifar10.yaml")
-

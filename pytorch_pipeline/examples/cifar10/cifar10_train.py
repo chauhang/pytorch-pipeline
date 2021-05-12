@@ -141,4 +141,3 @@ class CIFAR10Classifier(pl.LightningModule):
         if self.current_epoch == 0:
             sampleImg = torch.rand((1, 3, 64, 64))
             self.logger.experiment.add_graph(CIFAR10Classifier(), sampleImg)
-

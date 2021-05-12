@@ -8,10 +8,7 @@ from argparse import ArgumentParser
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument(
-        "--output_data",
-        type=str
-    )
+    parser.add_argument("--output_data", type=str)
 
     args = vars(parser.parse_args())
     output_path = args["output_data"]

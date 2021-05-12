@@ -53,4 +53,3 @@ class NewsDataset(Dataset):
             "attention_mask": encoding["attention_mask"].flatten(),
             "targets": torch.tensor(target, dtype=torch.long),
         }
-

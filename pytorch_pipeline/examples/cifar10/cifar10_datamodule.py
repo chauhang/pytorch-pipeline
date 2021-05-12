@@ -27,6 +27,7 @@ import boto3
 from botocore.exceptions import ClientError
 import matplotlib.pyplot as plt
 
+
 class CIFAR10DataModule(pl.LightningDataModule):
     def __init__(self, **kwargs):
         """
@@ -84,15 +85,9 @@ class CIFAR10DataModule(pl.LightningDataModule):
         val_count = self.getNumFiles(val_base_url)
         test_count = self.getNumFiles(test_base_url)
 
-        train_url = "{}/{}-{}".format(
-            train_base_url, "train", "{0.." + str(train_count) + "}.tar"
-        )
-        valid_url = "{}/{}-{}".format(
-            val_base_url, "val", "{0.." + str(val_count) + "}.tar"
-        )
-        test_url = "{}/{}-{}".format(
-            test_base_url, "test", "{0.." + str(test_count) + "}.tar"
-        )
+        train_url = "{}/{}-{}".format(train_base_url, "train", "{0.." + str(train_count) + "}.tar")
+        valid_url = "{}/{}-{}".format(val_base_url, "val", "{0.." + str(val_count) + "}.tar")
+        test_url = "{}/{}-{}".format(test_base_url, "test", "{0.." + str(test_count) + "}.tar")
 
         self.train_dataset = (
             wds.Dataset(train_url, handler=wds.warn_and_continue, length=40000 // 40)
@@ -154,6 +149,8 @@ class CIFAR10DataModule(pl.LightningDataModule):
         :return: output - Test data loader for the given input
         """
         self.test_data_loader = self.create_data_loader(
-            self.test_dataset, self.args.get("val_batch_size", None), self.args.get("val_num_workers", 4)
+            self.test_dataset,
+            self.args.get("val_batch_size", None),
+            self.args.get("val_num_workers", 4),
         )
         return self.test_data_loader
