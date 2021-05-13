@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if (( $# != 1 ))
+if (( $# != 2 ))
 then
-    echo "Usage: ./build.sh <path-to-example>"
-    echo "Ex: ./build.sh pytorch_pipeline/examples/cifar10"
+    echo "Usage: ./build.sh <path-to-example> <dockerhub-username>"
+    echo "Ex: ./build.sh pytorch_pipeline/examples/cifar10 shrinathsuresh"
     exit 1
 fi
 
@@ -15,7 +15,7 @@ export images_tag=$(cat curr_time.txt)
 echo ++++ Building component images with tag=$images_tag
 
 
-full_image_name=jagadeeshj/pytorch_pipeline:$images_tag
+full_image_name=$2/pytorch_pipeline:$images_tag
 
 echo IMAGE TO BUILD: $full_image_name
 
