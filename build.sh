@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if (( $# != 1 ))
+then
+    echo "Usage: ./build.sh <path-to-example>"
+    echo "Ex: ./build.sh pytorch_pipeline/examples/cifar10"
+    exit 1
+fi
+
+
 ## Generating current timestamp
 python3 gen_image_timestamp.py > curr_time.txt
 
