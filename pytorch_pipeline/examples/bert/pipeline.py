@@ -86,29 +86,45 @@ def pytorch_bert(
                 },
             }
         ),
+    ).set_display_name("Visualization")
+
+    prep_task = prep_op().after(prepare_tb_task).set_display_name("Preprocess & Transform")
+    train_task = (
+        train_op(input_data=prep_task.outputs["output_data"])
+        .after(prep_task)
+        .set_display_name("Training")
     )
 
-    prep_task = prep_op().after(prepare_tb_task)
-    train_task = train_op(input_data=prep_task.outputs["output_data"]).after(prep_task)
-
-    minio_tb_upload = minio_op(
-        bucket_name="mlpipeline",
-        folder_name=log_dir,
-        input_path=train_task.outputs["tensorboard_root"],
-        filename="",
-    ).after(train_task)
-    minio_mar_upload = minio_op(
-        bucket_name="mlpipeline",
-        folder_name=mar_path,
-        input_path=train_task.outputs["checkpoint_dir"],
-        filename="bert_test.mar",
-    ).after(train_task)
-    minio_config_upload = minio_op(
-        bucket_name="mlpipeline",
-        folder_name=config_prop_path,
-        input_path=train_task.outputs["checkpoint_dir"],
-        filename="config.properties",
-    ).after(train_task)
+    minio_tb_upload = (
+        minio_op(
+            bucket_name="mlpipeline",
+            folder_name=log_dir,
+            input_path=train_task.outputs["tensorboard_root"],
+            filename="",
+        )
+        .after(train_task)
+        .set_display_name("Tensorboard Events Pusher")
+    )
+    minio_mar_upload = (
+        minio_op(
+            bucket_name="mlpipeline",
+            folder_name=mar_path,
+            input_path=train_task.outputs["checkpoint_dir"],
+            filename="bert_test.mar",
+        )
+        .after(train_task)
+        .set_display_name("Mar Pusher")
+    )
+    minio_config_upload = (
+        minio_op(
+            bucket_name="mlpipeline",
+            folder_name=config_prop_path,
+            input_path=train_task.outputs["checkpoint_dir"],
+            filename="config.properties",
+        )
+        .after(train_task)
+        .set_display_name("Conifg Pusher")
+    )
 
     model_uri = str(model_uri)
     isvc_yaml = """
@@ -128,7 +144,11 @@ def pytorch_bert(
     """.format(
         DEPLOY, namespace, model_uri
     )
-    deploy_task = deploy_op(action="apply", inferenceservice_yaml=isvc_yaml).after(minio_mar_upload)
+    deploy_task = (
+        deploy_op(action="apply", inferenceservice_yaml=isvc_yaml)
+        .after(minio_mar_upload)
+        .set_display_name("Deployer")
+    )
 
 
 if __name__ == "__main__":
