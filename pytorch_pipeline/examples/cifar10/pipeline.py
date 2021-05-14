@@ -164,7 +164,7 @@ def pytorch_cifar10(
         pred_op(
             host_name=isvc_name,
             input_request=input_req,
-            cookie=cookie,
+            cookie="authservice_session=${cookie}",
             url=ingress_gateway,
             model=model,
             inference_type="predict",
@@ -176,7 +176,7 @@ def pytorch_cifar10(
         pred_op(
             host_name=isvc_name,
             input_request=input_req,
-            cookie=cookie,
+            cookie="authservice_session=${cookie}",
             url=ingress_gateway,
             model=model,
             inference_type="explain",
