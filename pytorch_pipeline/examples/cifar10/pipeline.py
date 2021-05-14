@@ -7,9 +7,7 @@ from kfp import dsl
 from kfp import compiler
 
 
-DEPLOY = "torchserve"
-MODEL = "cifar10"
-namespace = "kubeflow-user-example-com"
+minio_endpoint = "http://minio-service.kubeflow:9000"
 
 yaml_folder_path = "pytorch_pipeline/examples/cifar10/yaml"
 
@@ -17,6 +15,7 @@ prepare_tensorboard_op = load_component_from_file(f"{yaml_folder_path}/tensorboa
 prep_op = components.load_component_from_file(f"{yaml_folder_path}/pre_process/component.yaml")
 train_op = components.load_component_from_file(f"{yaml_folder_path}/train/component.yaml")
 deploy_op = load_component_from_file(f"{yaml_folder_path}/deploy/component.yaml")
+pred_op = components.load_component_from_file(f"{yaml_folder_path}/prediction/component.yaml")
 
 
 minio_op = components.load_component_from_file(f"{yaml_folder_path}/minio/component.yaml")
@@ -24,13 +23,19 @@ minio_op = components.load_component_from_file(f"{yaml_folder_path}/minio/compon
 
 @dsl.pipeline(name="Training Cifar10 pipeline", description="Cifar 10 dataset pipeline")
 def pytorch_cifar10(
-    minio_endpoint="http://minio-service.kubeflow:9000",
-    log_bucket="mlpipeline",
     log_dir=f"tensorboard/logs/{dsl.RUN_ID_PLACEHOLDER}/",
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
     model_uri=f"s3://mlpipeline/mar/{dsl.RUN_ID_PLACEHOLDER}",
+    log_bucket="mlpipeline",
     tf_image="jagadeeshj/tb_pluign:v1.8",
+    input_req="https://kubeflow-dataset.s3.us-east-2.amazonaws.com/cifar10_input/input.json",
+    cookie="cookie",
+    ingress_gateway="http://istio-ingressgateway.istio-system.svc.cluster.local",
+    isvc_name="torchserve.kubeflow-user-example-com.example.com",
+    deploy="torchserve",
+    model="cifar10",
+    namespace="kubeflow-user-example-com",
 ):
 
     prepare_tb_task = prepare_tensorboard_op(
@@ -152,12 +157,32 @@ def pytorch_cifar10(
             limits:
               memory: 4Gi   
     """.format(
-        DEPLOY, namespace, model_uri
+        deploy, namespace, model_uri
     )
-    deploy_task = (
-        deploy_op(action="apply", inferenceservice_yaml=isvc_yaml)
-        .after(minio_mar_upload)
-        .set_display_name("Deployer")
+    deploy_task = deploy_op(action="apply", inferenceservice_yaml=isvc_yaml).after(minio_mar_upload)
+    pred_task = (
+        pred_op(
+            host_name=isvc_name,
+            input_request=input_req,
+            cookie=cookie,
+            url=ingress_gateway,
+            model=model,
+            inference_type="predict",
+        )
+        .after(deploy_task)
+        .set_display_name("Prediction")
+    )
+    explain_task = (
+        pred_op(
+            host_name=isvc_name,
+            input_request=input_req,
+            cookie=cookie,
+            url=ingress_gateway,
+            model=model,
+            inference_type="explain",
+        )
+        .after(pred_task)
+        .set_display_name("Explanation")
     )
 
 
