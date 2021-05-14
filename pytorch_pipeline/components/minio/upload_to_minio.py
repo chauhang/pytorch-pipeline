@@ -29,6 +29,13 @@ parser.add_argument(
     help="Name of the file to be uploaded",
 )
 
+parser.add_argument(
+    "--endpoint",
+    type=str,
+    default="minio-service.kubeflow:9000",
+    help="Name of the file to be uploaded",
+)
+
 args = vars(parser.parse_args())
 
 bucket_name = args["bucket_name"]
@@ -39,8 +46,10 @@ filename = args["filename"]
 if filename:
     input_path = os.path.join(input_path, filename)
 
+endpoint = args["endpoint"]
+
 print("File to be uploaded: {}".format(input_path))
 
 print("Uploading file to : {}".format(folder_name))
 
-MinIO(source=input_path, bucket_name=bucket_name, destination=folder_name)
+MinIO(source=input_path, bucket_name=bucket_name, destination=folder_name, endpoint=endpoint)
