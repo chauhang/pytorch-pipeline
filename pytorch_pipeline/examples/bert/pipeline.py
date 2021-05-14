@@ -3,6 +3,7 @@
 
 import kfp
 import json
+from kfp.onprem import use_k8s_secret
 from kfp import components
 from kfp.components import load_component_from_file
 from kfp import dsl
@@ -68,22 +69,13 @@ def pytorch_bert(
                                     },
                                 },
                                 {"name": "AWS_REGION", "value": "minio"},
-                                {
-                                    "name": "S3_ENDPOINT",
-                                    "value": f"{minio_endpoint}",
-                                },
-                                {
-                                    "name": "S3_USE_HTTPS",
-                                    "value": "0",
-                                },
-                                {
-                                    "name": "S3_VERIFY_SSL",
-                                    "value": "0",
-                                },
+                                {"name": "S3_ENDPOINT", "value": f"{minio_endpoint}"},
+                                {"name": "S3_USE_HTTPS", "value": "0"},
+                                {"name": "S3_VERIFY_SSL", "value": "0"},
                             ]
                         }
-                    ],
-                },
+                    ]
+                }
             }
         ),
     ).set_display_name("Visualization")
@@ -102,6 +94,15 @@ def pytorch_bert(
             input_path=train_task.outputs["tensorboard_root"],
             filename="",
         )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
         .after(train_task)
         .set_display_name("Tensorboard Events Pusher")
     )
@@ -112,6 +113,15 @@ def pytorch_bert(
             input_path=train_task.outputs["checkpoint_dir"],
             filename="bert_test.mar",
         )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
         .after(train_task)
         .set_display_name("Mar Pusher")
     )
@@ -121,6 +131,15 @@ def pytorch_bert(
             folder_name=config_prop_path,
             input_path=train_task.outputs["checkpoint_dir"],
             filename="config.properties",
+        )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
         )
         .after(train_task)
         .set_display_name("Conifg Pusher")

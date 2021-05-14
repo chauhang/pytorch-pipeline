@@ -4,14 +4,12 @@ import wget
 import tempfile
 import subprocess
 from pathlib import Path
-from pytorch_pipeline.components.utils.lib_minio import LibMinio
 
 
 class MarGeneration:
     def __init__(self, mar_config: dict, minio_config: dict = None):
         self.mar_config = mar_config
         self.tmp_dirpath = tempfile.mkdtemp()
-        self.minio_client = LibMinio(minio_config=minio_config)
 
     def _download_dependent_file(self, name, path):
 
