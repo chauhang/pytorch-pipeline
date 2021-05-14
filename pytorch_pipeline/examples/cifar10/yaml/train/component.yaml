@@ -3,7 +3,8 @@ description: |
   Pytorch training
 
 inputs:
-  - {name: input_data}  
+  - {name: input_data}
+  - {name: profiler}
 
 outputs:
   - {name: tensorboard_root}
@@ -21,3 +22,5 @@ implementation:
     - {outputPath: tensorboard_root}
     - --checkpoint_dir
     - {outputPath: checkpoint_dir}
+    - --profiler
+    - {inputValue: profiler}
