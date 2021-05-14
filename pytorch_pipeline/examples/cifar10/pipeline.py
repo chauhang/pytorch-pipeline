@@ -29,7 +29,7 @@ def pytorch_cifar10(
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
     model_uri=f"s3://mlpipeline/mar/{dsl.RUN_ID_PLACEHOLDER}",
-    tf_image="jagadeeshj/tb_pluign:v1.8",
+    tf_image="jagadeeshj/tb_plugin:v1.8",
 ):
     @dsl.component
     def ls(input_dir: str):
