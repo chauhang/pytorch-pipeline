@@ -2,7 +2,6 @@ name: Inference
 description: Makes Inference request.
 inputs:
 - {name: Host Name}
-- {name: Input Request}
 - {name: Cookie}
 - {name: Url}
 - {name: Model}
