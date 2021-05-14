@@ -10,7 +10,7 @@ inputs:
  
 implementation:
   container:
-    image: jagadeeshj/pytorch_pipeline:v1.33
+    image: jagadeeshj/pytorch_pipeline:14-05-2021-17-22-22.436610
     command: ["python3", "pytorch_pipeline/components/minio/upload_to_minio.py"]
     args:
     - --bucket_name
