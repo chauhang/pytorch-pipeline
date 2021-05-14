@@ -32,7 +32,7 @@ def pytorch_bert(
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
     model_uri=f"s3://mlpipeline/mar/{dsl.RUN_ID_PLACEHOLDER}",
-    tf_image="gcr.io/deeplearning-platform-release/tf2-cpu.2-3:latest",
+    tf_image="jagadeeshj/tb_pluign:v1.8",
 ):
     @dsl.component
     def ls(input_dir: str):
@@ -90,7 +90,7 @@ def pytorch_bert(
 
     prep_task = prep_op().after(prepare_tb_task).set_display_name("Preprocess & Transform")
     train_task = (
-        train_op(input_data=prep_task.outputs["output_data"])
+        train_op(input_data=prep_task.outputs["output_data"], profiler="pytorch")
         .after(prep_task)
         .set_display_name("Training")
     )
