@@ -5,8 +5,12 @@ from minio import Minio
 
 
 class MinIO(BaseComponent):
-    def __init__(self, source: str, bucket_name, destination, minio_config: dict = None):
+    def __init__(
+        self, source: str, bucket_name, destination, minio_config: dict = None, endpoint=None
+    ):
         super(BaseComponent, self).__init__()
+
+        self.endpoint = endpoint
 
         if not minio_config:
             self.minio_config = self._use_default_config()
@@ -23,9 +27,9 @@ class MinIO(BaseComponent):
         # TODO: read the default config from secret manager
         print("Using Default minio config")
         minio_config = {
-            "HOST": "minio-service.kubeflow:9000",
-            "ACCESS_KEY": "minio",
-            "SECRET_KEY": "minio123",
+            "HOST": self.endpoint,
+            "ACCESS_KEY": os.environ["MINIO_ACCESS_KEY"],
+            "SECRET_KEY": os.environ["MINIO_SECRET_KEY"],
         }
 
         return minio_config
