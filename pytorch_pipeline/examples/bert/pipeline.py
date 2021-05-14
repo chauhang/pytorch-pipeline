@@ -27,7 +27,7 @@ minio_op = components.load_component_from_file(f"{yaml_folder_path}/minio/compon
 
 @dsl.pipeline(name="Training pipeline", description="Sample training job test")
 def pytorch_bert(
-    minio_endpoint="minio-service.kubeflow:9000",
+    minio_endpoint="http://minio-service.kubeflow:9000",
     log_bucket="mlpipeline",
     log_dir=f"tensorboard/logs/{dsl.RUN_ID_PLACEHOLDER}",
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
