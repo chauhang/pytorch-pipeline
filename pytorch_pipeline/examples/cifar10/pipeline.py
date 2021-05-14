@@ -159,7 +159,7 @@ def pytorch_cifar10(
     """.format(
         deploy, namespace, model_uri
     )
-    deploy_task = deploy_op(action="apply", inferenceservice_yaml=isvc_yaml).after(minio_mar_upload)
+    deploy_task = deploy_op(action="apply", inferenceservice_yaml=isvc_yaml).after(minio_mar_upload).set_display_name("Deployer")
     pred_task = (
         pred_op(
             host_name=isvc_name,
