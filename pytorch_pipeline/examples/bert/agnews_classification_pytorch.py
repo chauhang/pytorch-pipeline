@@ -42,12 +42,6 @@ parser.add_argument(
     help="Name of the model to be saved as (default: bert.pth)",
 )
 
-parser.add_argument(
-    "--profiler",
-    type=str,
-    help="Set profiler to pytorch for Profiling",
-)
-
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
 args = vars(parser.parse_args())
