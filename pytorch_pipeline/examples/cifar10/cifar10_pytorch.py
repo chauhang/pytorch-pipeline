@@ -55,6 +55,12 @@ parser.add_argument(
     help="Path to write mlpipeline-metrics.json",
 )
 
+parser.add_argument(
+    "--confusion_matrix_url",
+    type=str,
+    help="Minio url to generate confusion matrix",
+)
+
 
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
@@ -148,6 +154,7 @@ confusion_matrix_dict = {
     "actuals": model.target,
     "preds": model.preds,
     "classes": class_list,
+    "url": args["confusion_matrix_url"],
 }
 
 test_accuracy = round(float(model.test_acc.compute()), 2)

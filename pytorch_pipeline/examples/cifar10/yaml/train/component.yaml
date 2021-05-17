@@ -30,3 +30,5 @@ implementation:
     - {outputPath: MLPipeline UI Metadata}
     - --mlpipeline_metrics
     - { outputPath: MLPipeline Metrics}
+    - --confusion_matrix_url
+    - { inputValue: confusion_matrix_url}

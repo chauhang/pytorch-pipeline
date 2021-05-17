@@ -2,8 +2,10 @@ import pandas as pd
 import os
 import json
 import tempfile
+from urllib.parse import urlparse
 from sklearn.metrics import confusion_matrix
 from pytorch_pipeline.components.base.base_executor import BaseExecutor
+from pytorch_pipeline.components.minio.component import MinIO
 
 
 class Executor(BaseExecutor):
@@ -44,6 +46,7 @@ class Executor(BaseExecutor):
     def _generate_confusion_matrix(self, confusion_matrix_dict):
         actuals = confusion_matrix_dict["actuals"]
         preds = confusion_matrix_dict["preds"]
+        confusion_matrix_url = confusion_matrix_dict["url"]
 
         # Generating confusion matrix
         df = pd.DataFrame(list(zip(actuals, preds)), columns=["target", "predicted"])
@@ -63,9 +66,24 @@ class Executor(BaseExecutor):
         # saving confusion matrix
         confusion_matrix_df.to_csv(confusion_matrix_output_path, index=False, header=False)
 
+        parse_obj = urlparse(confusion_matrix_url, allow_fragments=False)
+        bucket_name = parse_obj.netloc
+        folder_name = str(parse_obj.path).lstrip("/")
+
+        print("Bucket name: ", bucket_name)
+        print("Folder name: ", folder_name)
+        # TODO:
+        endpoint = "minio-service.kubeflow:9000"
+        MinIO(
+            source=confusion_matrix_output_path,
+            bucket_name=bucket_name,
+            destination=folder_name,
+            endpoint=endpoint,
+        )
+
         # Generating metadata
         self._generate_confusion_matrix_metadata(
-            confusion_matrix_path=confusion_matrix_output_path,
+            confusion_matrix_path=confusion_matrix_url,
             classes=vocab,
         )
 
