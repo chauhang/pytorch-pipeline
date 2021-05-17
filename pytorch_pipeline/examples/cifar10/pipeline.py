@@ -85,6 +85,15 @@ def pytorch_cifar10(
             profiler="pytorch",
             confusion_matrix_url=confusion_matrix_log_dir,
         )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
         .after(prep_task)
         .set_display_name("Training")
     )
