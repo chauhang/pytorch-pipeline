@@ -83,7 +83,7 @@ class Executor(BaseExecutor):
 
         # Generating metadata
         self._generate_confusion_matrix_metadata(
-            confusion_matrix_path=confusion_matrix_url,
+            confusion_matrix_path=os.path.join(confusion_matrix_url, "confusion_matrix.csv"),
             classes=vocab,
         )
 

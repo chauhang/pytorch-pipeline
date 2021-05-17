@@ -83,7 +83,7 @@ def pytorch_cifar10(
         train_op(
             input_data=prep_task.outputs["output_data"],
             profiler="pytorch",
-            confusion_matrix_url=confusion_matrix_log_dir,
+            confusion_matrix_url=f"s3://{log_bucket}/confusion_matrix_log_dir",
         )
         .apply(
             use_k8s_secret(
