@@ -9,6 +9,7 @@ from pytorch_lightning.callbacks import (
     LearningRateMonitor,
     ModelCheckpoint,
 )
+from pytorch_pipeline.components.visualization.component import Visualization
 
 
 # Argument parser for user defined paths
@@ -107,3 +108,37 @@ mar_config = {
 
 
 MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
+
+classes = [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck",
+]
+
+model = trainer.ptl_trainer.get_model()
+
+target_index_list = list(set(model.target))
+
+class_list = []
+for index in target_index_list:
+    class_list.append(classes[index])
+
+
+confusion_matrix_dict = {
+    "actuals": model.target,
+    "preds": model.preds,
+    "classes": class_list,
+}
+
+test_accuracy = round(float(model.test_acc.compute()), 2)
+
+print("Model test accuracy: ", test_accuracy)
+
+visualization = Visualization(confusion_matrix_dict=confusion_matrix_dict)
