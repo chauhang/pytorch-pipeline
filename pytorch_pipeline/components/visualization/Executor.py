@@ -7,8 +7,9 @@ from pytorch_pipeline.components.base.base_executor import BaseExecutor
 
 
 class Executor(BaseExecutor):
-    def __init__(self):
-        pass
+    def __init__(self, mlpipeline_ui_metadata, mlpipeline_metrics):
+        self.mlpipeline_ui_metadata = mlpipeline_ui_metadata
+        self.mlpipeline_metrics = mlpipeline_metrics
 
     def _write_ui_metadata(self, metadata_filepath, metadata_dict, key="outputs"):
         if not os.path.exists(metadata_filepath):
@@ -23,9 +24,7 @@ class Executor(BaseExecutor):
         with open(metadata_filepath, "w") as fp:
             json.dump(metadata, fp)
 
-    def _generate_confusion_matrix_metadata(
-        self, confusion_matrix_path, classes, mlpipeline_ui_metadata
-    ):
+    def _generate_confusion_matrix_metadata(self, confusion_matrix_path, classes):
         print("Generating Confusion matrix Metadata")
         metadata = {
             "type": "confusion_matrix",
@@ -38,9 +37,11 @@ class Executor(BaseExecutor):
             "source": confusion_matrix_path,
             "labels": list(map(str, classes)),
         }
-        self._write_ui_metadata(metadata_filepath=mlpipeline_ui_metadata, metadata_dict=metadata)
+        self._write_ui_metadata(
+            metadata_filepath=self.mlpipeline_ui_metadata, metadata_dict=metadata
+        )
 
-    def _generate_confusion_matrix(self, confusion_matrix_dict, mlpipeline_ui_metadata):
+    def _generate_confusion_matrix(self, confusion_matrix_dict):
         actuals = confusion_matrix_dict["actuals"]
         preds = confusion_matrix_dict["preds"]
 
@@ -66,18 +67,27 @@ class Executor(BaseExecutor):
         self._generate_confusion_matrix_metadata(
             confusion_matrix_path=confusion_matrix_output_path,
             classes=vocab,
-            mlpipeline_ui_metadata=mlpipeline_ui_metadata,
+        )
+
+    def _visualize_accuracy_metric(self, accuracy):
+        metadata = {
+            "name": "accuracy-score",
+            "numberValue": accuracy,
+            "format": "PERCENTAGE",
+        }
+        self._write_ui_metadata(
+            metadata_filepath=self.mlpipeline_metrics, metadata_dict=metadata, key="metrics"
         )
 
     def Do(
         self,
-        mlpipeline_ui_metadata=None,
-        mlpipeline_metrics=None,
         confusion_matrix_dict=None,
         test_accuracy=None,
     ):
         if confusion_matrix:
             self._generate_confusion_matrix(
                 confusion_matrix_dict=confusion_matrix_dict,
-                mlpipeline_ui_metadata=mlpipeline_ui_metadata,
             )
+
+        if test_accuracy:
+            self._visualize_accuracy_metric(accuracy=test_accuracy)

@@ -43,6 +43,19 @@ parser.add_argument(
     help="Name of the model to be saved as (default: resnet.pth)",
 )
 
+parser.add_argument(
+    "--mlpipeline_ui_metadata",
+    type=str,
+    help="Path to write mlpipeline-ui-metadata.json",
+)
+
+parser.add_argument(
+    "--mlpipeline_metrics",
+    type=str,
+    help="Path to write mlpipeline-metrics.json",
+)
+
+
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
 args = vars(parser.parse_args())
@@ -141,4 +154,9 @@ test_accuracy = round(float(model.test_acc.compute()), 2)
 
 print("Model test accuracy: ", test_accuracy)
 
-visualization = Visualization(confusion_matrix_dict=confusion_matrix_dict)
+visualization = Visualization(
+    test_accuracy=test_accuracy,
+    confusion_matrix_dict=confusion_matrix_dict,
+    mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+    mlpipeline_metrics=args["mlpipeline_metrics"],
+)

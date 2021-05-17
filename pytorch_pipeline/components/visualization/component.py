@@ -18,9 +18,9 @@ class Visualization(BaseComponent):
         if not mlpipeline_metrics:
             mlpipeline_metrics = "/mlpipeline-metrics.json"
 
-        Executor().Do(
-            mlpipeline_ui_metadata=mlpipeline_ui_metadata,
-            mlpipeline_metrics=mlpipeline_metrics,
+        Executor(
+            mlpipeline_ui_metadata=mlpipeline_ui_metadata, mlpipeline_metrics=mlpipeline_metrics
+        ).Do(
             confusion_matrix_dict=confusion_matrix_dict,
             test_accuracy=test_accuracy,
         )
