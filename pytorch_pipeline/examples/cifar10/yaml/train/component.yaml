@@ -5,6 +5,7 @@ description: |
 inputs:
   - {name: input_data}
   - {name: profiler}
+  - {name: confusion_matrix_url}
 
 outputs:
   - {name: tensorboard_root}
