@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from pytorch_pipeline.components.base.base_component import BaseComponent
 from pytorch_pipeline.components.visualization.Executor import Executor
 
@@ -12,10 +14,14 @@ class Visualization(BaseComponent):
     ):
         super(BaseComponent, self).__init__()
 
-        if not mlpipeline_ui_metadata:
+        if mlpipeline_ui_metadata:
+            Path(os.path.dirname(mlpipeline_ui_metadata)).mkdir(parents=True, exist_ok=True)
+        else:
             mlpipeline_ui_metadata = "/mlpipeline-ui-metadata.json"
 
-        if not mlpipeline_metrics:
+        if mlpipeline_metrics:
+            Path(os.path.dirname(mlpipeline_metrics)).mkdir(parents=True, exist_ok=True)
+        else:
             mlpipeline_metrics = "/mlpipeline-metrics.json"
 
         Executor(
