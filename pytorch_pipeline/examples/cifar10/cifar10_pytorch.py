@@ -135,7 +135,7 @@ classes = [
     "truck",
 ]
 
-model = trainer.ptl_trainer.get_model()
+model = trainer.ptl_trainer.model
 
 target_index_list = list(set(model.target))
 
