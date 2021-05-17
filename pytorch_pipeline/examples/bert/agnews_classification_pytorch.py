@@ -42,7 +42,6 @@ parser.add_argument(
     help="Name of the model to be saved as (default: bert.pth)",
 )
 
-
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
 args = vars(parser.parse_args())
@@ -77,8 +76,8 @@ trainer_args = {
 }
 
 
-# if "profiler" in args:
-#     trainer_args["profiler"] = args["profiler"]
+if "profiler" in args and args["profiler"] != "":
+    trainer_args["profiler"] = args["profiler"]
 
 # Setting the datamodule specific arguments
 data_module_args = {

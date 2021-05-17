@@ -2,7 +2,6 @@ import pytorch_lightning as pl
 import torch
 import os
 from pytorch_pipeline.components.trainer.generic_executor import GenericExecutor
-from pytorch_pipeline.components.utils.lib_minio import LibMinio
 
 
 class Executor(GenericExecutor):

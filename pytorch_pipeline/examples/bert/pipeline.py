@@ -3,6 +3,7 @@
 
 import kfp
 import json
+from kfp.onprem import use_k8s_secret
 from kfp import components
 from kfp.components import load_component_from_file
 from kfp import dsl
@@ -26,13 +27,13 @@ minio_op = components.load_component_from_file(f"{yaml_folder_path}/minio/compon
 
 @dsl.pipeline(name="Training pipeline", description="Sample training job test")
 def pytorch_bert(
-    minio_endpoint="minio-service.kubeflow:9000",
+    minio_endpoint="http://minio-service.kubeflow:9000",
     log_bucket="mlpipeline",
     log_dir=f"tensorboard/logs/{dsl.RUN_ID_PLACEHOLDER}",
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
     model_uri=f"s3://mlpipeline/mar/{dsl.RUN_ID_PLACEHOLDER}",
-    tf_image="gcr.io/deeplearning-platform-release/tf2-cpu.2-3:latest",
+    tf_image="jagadeeshj/tb_plugin:v1.8",
 ):
     @dsl.component
     def ls(input_dir: str):
@@ -68,47 +69,81 @@ def pytorch_bert(
                                     },
                                 },
                                 {"name": "AWS_REGION", "value": "minio"},
-                                {
-                                    "name": "S3_ENDPOINT",
-                                    "value": f"{minio_endpoint}",
-                                },
-                                {
-                                    "name": "S3_USE_HTTPS",
-                                    "value": "0",
-                                },
-                                {
-                                    "name": "S3_VERIFY_SSL",
-                                    "value": "0",
-                                },
+                                {"name": "S3_ENDPOINT", "value": f"{minio_endpoint}"},
+                                {"name": "S3_USE_HTTPS", "value": "0"},
+                                {"name": "S3_VERIFY_SSL", "value": "0"},
                             ]
                         }
-                    ],
-                },
+                    ]
+                }
             }
         ),
+    ).set_display_name("Visualization")
+
+    prep_task = prep_op().after(prepare_tb_task).set_display_name("Preprocess & Transform")
+    train_task = (
+        train_op(input_data=prep_task.outputs["output_data"], profiler="pytorch")
+        .after(prep_task)
+        .set_display_name("Training")
     )
 
-    prep_task = prep_op().after(prepare_tb_task)
-    train_task = train_op(input_data=prep_task.outputs["output_data"]).after(prep_task)
-
-    minio_tb_upload = minio_op(
-        bucket_name="mlpipeline",
-        folder_name=log_dir,
-        input_path=train_task.outputs["tensorboard_root"],
-        filename="",
-    ).after(train_task)
-    minio_mar_upload = minio_op(
-        bucket_name="mlpipeline",
-        folder_name=mar_path,
-        input_path=train_task.outputs["checkpoint_dir"],
-        filename="bert_test.mar",
-    ).after(train_task)
-    minio_config_upload = minio_op(
-        bucket_name="mlpipeline",
-        folder_name=config_prop_path,
-        input_path=train_task.outputs["checkpoint_dir"],
-        filename="config.properties",
-    ).after(train_task)
+    minio_tb_upload = (
+        minio_op(
+            bucket_name="mlpipeline",
+            folder_name=log_dir,
+            input_path=train_task.outputs["tensorboard_root"],
+            filename="",
+        )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
+        .after(train_task)
+        .set_display_name("Tensorboard Events Pusher")
+    )
+    minio_mar_upload = (
+        minio_op(
+            bucket_name="mlpipeline",
+            folder_name=mar_path,
+            input_path=train_task.outputs["checkpoint_dir"],
+            filename="bert_test.mar",
+        )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
+        .after(train_task)
+        .set_display_name("Mar Pusher")
+    )
+    minio_config_upload = (
+        minio_op(
+            bucket_name="mlpipeline",
+            folder_name=config_prop_path,
+            input_path=train_task.outputs["checkpoint_dir"],
+            filename="config.properties",
+        )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
+        .after(train_task)
+        .set_display_name("Conifg Pusher")
+    )
 
     model_uri = str(model_uri)
     isvc_yaml = """
@@ -128,7 +163,11 @@ def pytorch_bert(
     """.format(
         DEPLOY, namespace, model_uri
     )
-    deploy_task = deploy_op(action="apply", inferenceservice_yaml=isvc_yaml).after(minio_mar_upload)
+    deploy_task = (
+        deploy_op(action="apply", inferenceservice_yaml=isvc_yaml)
+        .after(minio_mar_upload)
+        .set_display_name("Deployer")
+    )
 
 
 if __name__ == "__main__":
