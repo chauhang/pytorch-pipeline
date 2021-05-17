@@ -36,6 +36,7 @@ def pytorch_cifar10(
     deploy="torchserve",
     model="cifar10",
     namespace="kubeflow-user-example-com",
+    confusion_matrix_log_dir=f"confusion_matrix/{dsl.RUN_ID_PLACEHOLDER}/",
 ):
 
     prepare_tb_task = prepare_tensorboard_op(
@@ -79,7 +80,11 @@ def pytorch_cifar10(
 
     prep_task = prep_op().after(prepare_tb_task).set_display_name("Preprocess & Transform")
     train_task = (
-        train_op(input_data=prep_task.outputs["output_data"], profiler="pytorch")
+        train_op(
+            input_data=prep_task.outputs["output_data"],
+            profiler="pytorch",
+            confusion_matrix_url=confusion_matrix_log_dir,
+        )
         .after(prep_task)
         .set_display_name("Training")
     )
@@ -159,7 +164,11 @@ def pytorch_cifar10(
     """.format(
         deploy, namespace, model_uri
     )
-    deploy_task = deploy_op(action="apply", inferenceservice_yaml=isvc_yaml).after(minio_mar_upload).set_display_name("Deployer")
+    deploy_task = (
+        deploy_op(action="apply", inferenceservice_yaml=isvc_yaml)
+        .after(minio_mar_upload)
+        .set_display_name("Deployer")
+    )
     pred_task = (
         pred_op(
             host_name=isvc_name,
