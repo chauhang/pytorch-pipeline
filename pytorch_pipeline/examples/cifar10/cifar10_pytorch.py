@@ -188,10 +188,10 @@ markdown_dict = {"storage": "inline", "source": visualization_arguments}
 print("Visualization Arguments: ", markdown_dict)
 
 visualization = Visualization(
-    # test_accuracy=test_accuracy,
-    # confusion_matrix_dict=confusion_matrix_dict,
+    test_accuracy=test_accuracy,
+    confusion_matrix_dict=confusion_matrix_dict,
     # pod_template_spec=args["pod_template_spec"],
     mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
-    # mlpipeline_metrics=args["mlpipeline_metrics"],
+    mlpipeline_metrics=args["mlpipeline_metrics"],
     markdown=markdown_dict,
 )

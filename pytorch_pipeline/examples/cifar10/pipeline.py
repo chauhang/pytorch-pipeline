@@ -5,6 +5,7 @@ from kfp import components
 from kfp.components import load_component_from_file
 from kfp import dsl
 from kfp import compiler
+from kfp.aws import use_aws_secret
 
 
 minio_endpoint = "http://minio-service.kubeflow:9000"
@@ -36,6 +37,7 @@ def pytorch_cifar10(
     deploy="torchserve",
     model="cifar10",
     namespace="kubeflow-user-example-com",
+    confusion_matrix_bucket="kubeflow-dataset",
     confusion_matrix_log_dir=f"confusion_matrix/{dsl.RUN_ID_PLACEHOLDER}/",
 ):
     pod_template_spec = json.dumps(
@@ -84,7 +86,7 @@ def pytorch_cifar10(
         train_op(
             input_data=prep_task.outputs["output_data"],
             profiler="pytorch",
-            confusion_matrix_url=f"s3://{log_bucket}/confusion_matrix_log_dir",
+            confusion_matrix_url=f"s3://{confusion_matrix_bucket}/{confusion_matrix_log_dir}",
         )
         .apply(
             use_k8s_secret(
@@ -95,6 +97,7 @@ def pytorch_cifar10(
                 },
             )
         )
+        .apply(use_aws_secret('aws-secret', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'))
         .after(prep_task)
         .set_display_name("Training")
     )
