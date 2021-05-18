@@ -28,10 +28,17 @@ class Executor(BaseExecutor):
             json.dump(metadata, fp)
 
     def _generate_markdown(self, markdown_dict):
+        # markdown_metadata = {
+        #     "storage": markdown_dict["storage"],
+        #     "source": json.dumps(markdown_dict["source"]),
+        #     "type": "markdown",
+        # }
+        source_str = json.dumps(markdown_dict["source"])
+        source = f"<font size='5'> {source_str} <font/>"
         markdown_metadata = {
             "storage": markdown_dict["storage"],
-            "source": json.dumps(markdown_dict["source"]),
-            "type": "markdown",
+            "source": source,
+            "type": "web-app",
         }
         self._write_ui_metadata(
             metadata_filepath=self.mlpipeline_ui_metadata, metadata_dict=markdown_metadata
