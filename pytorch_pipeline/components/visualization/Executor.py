@@ -30,7 +30,7 @@ class Executor(BaseExecutor):
     def _generate_markdown(self, markdown_dict):
         markdown_metadata = {
             "storage": markdown_dict["storage"],
-            "source": json.dumps(markdown_dict["source"]),
+            "source": markdown_dict["source"],
             "type": "markdown",
         }
         self._write_ui_metadata(
