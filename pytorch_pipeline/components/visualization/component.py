@@ -9,6 +9,7 @@ class Visualization(BaseComponent):
         self,
         mlpipeline_ui_metadata=None,
         mlpipeline_metrics=None,
+        pod_template_spec=None,
         confusion_matrix_dict=None,
         test_accuracy=None,
     ):
@@ -25,7 +26,9 @@ class Visualization(BaseComponent):
             mlpipeline_metrics = "/mlpipeline-metrics.json"
 
         Executor(
-            mlpipeline_ui_metadata=mlpipeline_ui_metadata, mlpipeline_metrics=mlpipeline_metrics
+            mlpipeline_ui_metadata=mlpipeline_ui_metadata,
+            mlpipeline_metrics=mlpipeline_metrics,
+            pod_template_spec=pod_template_spec,
         ).Do(
             confusion_matrix_dict=confusion_matrix_dict,
             test_accuracy=test_accuracy,

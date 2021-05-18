@@ -61,6 +61,12 @@ parser.add_argument(
     help="Minio url to generate confusion matrix",
 )
 
+parser.add_argument(
+    "--pod_template_spec",
+    type=str,
+    help="Pod template spec",
+)
+
 
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
@@ -164,6 +170,7 @@ print("Model test accuracy: ", test_accuracy)
 visualization = Visualization(
     test_accuracy=test_accuracy,
     confusion_matrix_dict=confusion_matrix_dict,
+    pod_template_spec=args["pod_template_spec"],
     mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
     mlpipeline_metrics=args["mlpipeline_metrics"],
 )

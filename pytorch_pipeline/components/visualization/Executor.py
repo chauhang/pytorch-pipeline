@@ -9,9 +9,10 @@ from pytorch_pipeline.components.minio.component import MinIO
 
 
 class Executor(BaseExecutor):
-    def __init__(self, mlpipeline_ui_metadata, mlpipeline_metrics):
+    def __init__(self, mlpipeline_ui_metadata, mlpipeline_metrics, pod_template_spec=None):
         self.mlpipeline_ui_metadata = mlpipeline_ui_metadata
         self.mlpipeline_metrics = mlpipeline_metrics
+        self.pod_template_spec = pod_template_spec
 
     def _write_ui_metadata(self, metadata_filepath, metadata_dict, key="outputs"):
         if not os.path.exists(metadata_filepath):
@@ -39,6 +40,10 @@ class Executor(BaseExecutor):
             "source": confusion_matrix_path,
             "labels": list(map(str, classes)),
         }
+
+        if self.pod_template_spec:
+            metadata["pod_template_spec"] = self.pod_template_spec
+
         self._write_ui_metadata(
             metadata_filepath=self.mlpipeline_ui_metadata, metadata_dict=metadata
         )

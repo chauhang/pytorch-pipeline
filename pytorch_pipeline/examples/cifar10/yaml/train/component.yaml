@@ -6,6 +6,7 @@ inputs:
   - {name: input_data}
   - {name: profiler}
   - {name: confusion_matrix_url}
+  - {name: Pod Template Spec, default: 'null'}
 
 outputs:
   - {name: tensorboard_root}
@@ -33,3 +34,5 @@ implementation:
     - { outputPath: MLPipeline Metrics}
     - --confusion_matrix_url
     - { inputValue: confusion_matrix_url}
+    - --pod_template_spec
+    - - {inputValue: Pod Template Spec}
