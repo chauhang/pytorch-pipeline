@@ -10,11 +10,7 @@ from kfp import dsl
 from kfp import compiler
 
 
-DEPLOY = "bertserve"
-MODEL = "bert"
-
-namespace = "kubeflow-user-example-com"
-yaml_folder_path = "pytorch_pipeline/examples/bert/yaml"
+yaml_folder_path = "examples/bert/yaml"
 
 prepare_tensorboard_op = load_component_from_file(f"{yaml_folder_path}/tensorboard/component.yaml")
 prep_op = components.load_component_from_file(f"{yaml_folder_path}/pre_process/component.yaml")
@@ -31,15 +27,13 @@ def pytorch_bert(
     log_bucket="mlpipeline",
     log_dir=f"tensorboard/logs/{dsl.RUN_ID_PLACEHOLDER}",
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
+    model_path=f"modelfile-store/{dsl.RUN_ID_PLACEHOLDER}/bert",
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
     model_uri=f"s3://mlpipeline/mar/{dsl.RUN_ID_PLACEHOLDER}",
     tf_image="jagadeeshj/tb_plugin:v1.8",
+    deploy = "bertserve",
+    namespace = "kubeflow-user-example-com"
 ):
-    @dsl.component
-    def ls(input_dir: str):
-        return dsl.ContainerOp(
-            name="list", image="busybox:latest", command=["ls", "-R", "%s" % input_dir]
-        )
 
     prepare_tb_task = prepare_tensorboard_op(
         log_dir_uri=f"s3://{log_bucket}/{log_dir}",
@@ -106,6 +100,25 @@ def pytorch_bert(
         .after(train_task)
         .set_display_name("Tensorboard Events Pusher")
     )
+    minio_model_upload = (
+        minio_op(
+            bucket_name="mlpipeline",
+            folder_name=model_path,
+            input_path=train_task.outputs["checkpoint_dir"],
+            filename="",
+        )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
+        .after(train_task)
+        .set_display_name("Model Pusher")
+    )
     minio_mar_upload = (
         minio_op(
             bucket_name="mlpipeline",
@@ -161,7 +174,7 @@ def pytorch_bert(
             limits:
               memory: 4Gi   
     """.format(
-        DEPLOY, namespace, model_uri
+        deploy, namespace, model_uri
     )
     deploy_task = (
         deploy_op(action="apply", inferenceservice_yaml=isvc_yaml)
