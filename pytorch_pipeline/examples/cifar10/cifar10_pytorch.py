@@ -64,6 +64,7 @@ parser.add_argument(
 parser.add_argument(
     "--pod_template_spec",
     type=str,
+    default=None,
     help="Pod template spec",
 )
 
