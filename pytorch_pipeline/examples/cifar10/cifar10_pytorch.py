@@ -168,7 +168,21 @@ test_accuracy = round(float(model.test_acc.compute()), 2)
 
 print("Model test accuracy: ", test_accuracy)
 
-markdown_dict = {"storage": "inline", "source": args}
+visualization_arguments = {
+    "input": {
+        "tensorboard_root": args["tensorboard_root"],
+        "checkpoint_dir": args["checkpoint_dir"],
+        "dataset_path": args["dataset_path"],
+        "model_name": args["model_name"],
+        "confusion_matrix_url": args["confusion_matrix_url"],
+    },
+    "output": {
+        "mlpipeline_ui_metadata": args["mlpipeline_ui_metadata"],
+        "mlpipeline_metrics": args["mlpipeline_metrics"],
+    },
+}
+
+markdown_dict = {"storage": "inline", "source": visualization_arguments}
 
 visualization = Visualization(
     # test_accuracy=test_accuracy,
