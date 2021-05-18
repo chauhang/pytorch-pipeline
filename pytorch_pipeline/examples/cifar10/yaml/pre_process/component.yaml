@@ -4,6 +4,7 @@ description: |
 
 outputs:
   - {name: output_data, description: 'The path to the input datasets'}
+  - {name: MLPipeline UI Metadata}
  
 implementation:
   container:
@@ -12,5 +13,6 @@ implementation:
     args:
     - --output_data
     - {outputPath: output_data}
- 
+    - --mlpipeline_ui_metadata
+    - { outputPath: MLPipeline UI Metadata }
    

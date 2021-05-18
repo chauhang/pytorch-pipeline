@@ -5,10 +5,17 @@ import torchvision
 import webdataset as wds
 from sklearn.model_selection import train_test_split
 from argparse import ArgumentParser
+from pytorch_pipeline.components.visualization.component import Visualization
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--output_data", type=str)
+
+    parser.add_argument(
+        "--mlpipeline_ui_metadata",
+        type=str,
+        help="Path to write mlpipeline-ui-metadata.json",
+    )
 
     args = vars(parser.parse_args())
     output_path = args["output_data"]
@@ -38,3 +45,17 @@ if __name__ == "__main__":
     entry_point = ["ls", "-R", output_path]
     run_code = subprocess.run(entry_point, stdout=subprocess.PIPE)
     print(run_code.stdout)
+
+    visualization_arguments = {
+        "output": {
+            "mlpipeline_ui_metadata": args["mlpipeline_ui_metadata"],
+            "dataset_download_path": args["output_data"],
+        },
+    }
+
+    markdown_dict = {"storage": "inline", "source": visualization_arguments}
+
+    visualization = Visualization(
+        mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+        markdown=markdown_dict,
+    )
