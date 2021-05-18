@@ -168,10 +168,13 @@ test_accuracy = round(float(model.test_acc.compute()), 2)
 
 print("Model test accuracy: ", test_accuracy)
 
+markdown_dict = {"storage": "inline", "source": args}
+
 visualization = Visualization(
-    test_accuracy=test_accuracy,
-    confusion_matrix_dict=confusion_matrix_dict,
-    pod_template_spec=args["pod_template_spec"],
+    # test_accuracy=test_accuracy,
+    # confusion_matrix_dict=confusion_matrix_dict,
+    # pod_template_spec=args["pod_template_spec"],
     mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
-    mlpipeline_metrics=args["mlpipeline_metrics"],
+    # mlpipeline_metrics=args["mlpipeline_metrics"],
+    markdown=markdown_dict,
 )

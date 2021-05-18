@@ -27,6 +27,16 @@ class Executor(BaseExecutor):
         with open(metadata_filepath, "w") as fp:
             json.dump(metadata, fp)
 
+    def _generate_markdown(self, markdown_dict):
+        markdown_metadata = {
+            "storage": markdown_dict["storage"],
+            "source": json.dumps(markdown_dict["source"]),
+            "type": "markdown",
+        }
+        self._write_ui_metadata(
+            metadata_filepath=self.mlpipeline_ui_metadata, metadata_dict=markdown_metadata
+        )
+
     def _generate_confusion_matrix_metadata(self, confusion_matrix_path, classes):
         print("Generating Confusion matrix Metadata")
         metadata = {
@@ -102,15 +112,14 @@ class Executor(BaseExecutor):
             metadata_filepath=self.mlpipeline_metrics, metadata_dict=metadata, key="metrics"
         )
 
-    def Do(
-        self,
-        confusion_matrix_dict=None,
-        test_accuracy=None,
-    ):
-        if confusion_matrix:
+    def Do(self, confusion_matrix_dict=None, test_accuracy=None, markdown=None):
+        if confusion_matrix_dict:
             self._generate_confusion_matrix(
                 confusion_matrix_dict=confusion_matrix_dict,
             )
 
         if test_accuracy:
             self._visualize_accuracy_metric(accuracy=test_accuracy)
+
+        if markdown:
+            self._generate_markdown(markdown_dict=markdown)
