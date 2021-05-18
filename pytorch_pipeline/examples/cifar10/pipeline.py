@@ -97,7 +97,7 @@ def pytorch_cifar10(
                 },
             )
         )
-        .apply(use_aws_secret('aws-secret', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'))
+        .apply(use_aws_secret('aws-secret', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'us-east-2'))
         .after(prep_task)
         .set_display_name("Training")
     )
