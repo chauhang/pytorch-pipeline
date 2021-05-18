@@ -27,7 +27,7 @@ def pytorch_bert(
     log_bucket="mlpipeline",
     log_dir=f"tensorboard/logs/{dsl.RUN_ID_PLACEHOLDER}",
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
-    model_path=f"modelfile-store/{dsl.RUN_ID_PLACEHOLDER}/bert",
+    model_path=f"modelfiles/bert/{dsl.RUN_ID_PLACEHOLDER}",
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
     model_uri=f"s3://mlpipeline/mar/{dsl.RUN_ID_PLACEHOLDER}",
     tf_image="jagadeeshj/tb_plugin:v1.8",

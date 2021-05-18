@@ -1,23 +1,21 @@
 name: Minio Upload
 description: |
   Minio Upload
-
 inputs:
-  - {name: bucket_name}  
-  - {name: folder_name}  
+  - {name: bucket_name}
+  - {name: folder_name}
   - {name: input_path}
   - {name: filename}
- 
 implementation:
   container:
-    image: jagadeeshj/pytorch_pipeline:14-05-2021-17-22-22.436610
+    image: arvindideas2it/pytorch_pipeline:19-05-2021-01-36-06.212950
     command: ["python3", "pytorch_pipeline/components/minio/upload_to_minio.py"]
     args:
-    - --bucket_name
-    - {inputValue: bucket_name}
-    - --folder_name
-    - {inputValue: folder_name}
-    - --input_path
-    - {inputPath: input_path}
-    - --filename
-    - {inputValue: filename}
+      - --bucket_name
+      - {inputValue: bucket_name}
+      - --folder_name
+      - {inputValue: folder_name}
+      - --input_path
+      - {inputPath: input_path}
+      - --filename
+      - {inputValue: filename}
