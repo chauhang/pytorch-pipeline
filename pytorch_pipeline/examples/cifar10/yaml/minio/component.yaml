@@ -7,6 +7,7 @@ inputs:
   - {name: folder_name}  
   - {name: input_path}
   - {name: filename}
+  - {name: MLPipeline UI Metadata}
  
 implementation:
   container:
@@ -21,3 +22,5 @@ implementation:
     - {inputPath: input_path}
     - --filename
     - {inputValue: filename}
+    - --mlpipeline_ui_metadata
+    - { outputPath: MLPipeline UI Metadata }

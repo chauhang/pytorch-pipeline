@@ -1,6 +1,7 @@
 import os
 from argparse import ArgumentParser
 from pytorch_pipeline.components.minio.component import MinIO
+from pytorch_pipeline.components.visualization.component import Visualization
 
 # Argument parser for user defined paths
 parser = ArgumentParser()
@@ -36,6 +37,12 @@ parser.add_argument(
     help="Name of the file to be uploaded",
 )
 
+parser.add_argument(
+    "--mlpipeline_ui_metadata",
+    type=str,
+    help="Path to write mlpipeline-ui-metadata.json",
+)
+
 args = vars(parser.parse_args())
 
 bucket_name = args["bucket_name"]
@@ -53,3 +60,27 @@ print("File to be uploaded: {}".format(input_path))
 print("Uploading file to : {}".format(folder_name))
 
 MinIO(source=input_path, bucket_name=bucket_name, destination=folder_name, endpoint=endpoint)
+
+inputs = {}
+
+for key, value in args.items():
+    inputs[key] = value
+
+outputs = {}
+
+s3_url = f"s3://{bucket_name}/{folder_name}"
+
+if filename:
+    s3_url += f"/{filename}"
+
+outputs["minio_url"] = s3_url
+
+visualization_arguments = {"inputs" : inputs, "outputs" : outputs}
+
+markdown_dict = {"storage": "inline", "source": visualization_arguments}
+
+visualization = Visualization(
+    mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+    markdown=markdown_dict,
+)
+
