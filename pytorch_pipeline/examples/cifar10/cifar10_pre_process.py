@@ -55,6 +55,8 @@ if __name__ == "__main__":
 
     markdown_dict = {"storage": "inline", "source": visualization_arguments}
 
+    print("Visualization arguments: ", markdown_dict)
+
     visualization = Visualization(
         mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
         markdown=markdown_dict,
