@@ -28,7 +28,7 @@ class Executor(BaseExecutor):
             json.dump(metadata, fp)
 
     def _generate_markdown(self, markdown_dict):
-        markdown_str = f"```json {markdown_dict} ```"
+        markdown_str = f"```json {json.dumps(markdown_dict)} ```"
         markdown_metadata = {
             "storage": markdown_dict["storage"],
             "source": markdown_str,
