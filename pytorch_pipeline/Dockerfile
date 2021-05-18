@@ -6,7 +6,7 @@ RUN apt-get update
 
 RUN apt-get install -y git
 
-RUN git clone -b main https://github.com/chauhang/pytorch-pipeline
+RUN git clone -b fix/runpipeline_notebook https://github.com/jagadeeshi2i/pytorch-pipeline
 
 RUN pip3 install -r requirements.txt
 

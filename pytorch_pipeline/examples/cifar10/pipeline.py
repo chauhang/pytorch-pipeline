@@ -24,6 +24,7 @@ def pytorch_cifar10(
     minio_endpoint = "http://minio-service.kubeflow:9000",
     log_dir=f"tensorboard/logs/{dsl.RUN_ID_PLACEHOLDER}/",
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
+    model_path=f"modelfile-store/{dsl.RUN_ID_PLACEHOLDER}/cifar10",
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
     model_uri=f"s3://mlpipeline/mar/{dsl.RUN_ID_PLACEHOLDER}",
     tf_image="jagadeeshj/tb_plugin:v1.8",
@@ -100,6 +101,26 @@ def pytorch_cifar10(
         )
         .after(train_task)
         .set_display_name("Tensorboard Events Pusher")
+    )
+
+    minio_model_upload = (
+        minio_op(
+            bucket_name="mlpipeline",
+            folder_name=model_path,
+            input_path=train_task.outputs["checkpoint_dir"],
+            filename="",
+        )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
+        .after(train_task)
+        .set_display_name("Model Pusher")
     )
     minio_mar_upload = (
         minio_op(
