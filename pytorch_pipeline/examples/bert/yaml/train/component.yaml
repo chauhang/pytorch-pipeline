@@ -8,6 +8,8 @@ inputs:
 outputs:
   - {name: tensorboard_root}
   - {name: checkpoint_dir}
+  - {name: MLPipeline UI Metadata}
+  - {name: MLPipeline Metrics}
   
 implementation:
   container:
@@ -22,3 +24,7 @@ implementation:
     - {outputPath: checkpoint_dir}
     - --profiler
     - {inputValue: profiler}
+    - --mlpipeline_ui_metadata
+    - {outputPath: MLPipeline UI Metadata}
+    - --mlpipeline_metrics
+    - { outputPath: MLPipeline Metrics}
