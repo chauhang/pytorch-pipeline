@@ -84,7 +84,7 @@ if __name__ == "__main__":
         print("Label Counts of [{}]({}) : {}".format(key, label_names[key].upper(), value))
         label_dict[label_names[key].upper()] = int(value)
 
-    label_dict["total_count"] = int(total_count)
+    label_dict["TOTAL_COUNT"] = int(total_count)
 
     markdown_dict = {"storage": "inline", "source": label_dict}
 
