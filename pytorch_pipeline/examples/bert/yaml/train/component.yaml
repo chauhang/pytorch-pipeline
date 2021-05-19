@@ -5,6 +5,7 @@ inputs:
   - {name: input_data}
   - {name: profiler}
   - {name: confusion_matrix_url}
+  - {name: num_samples, default: 1000}
 
 outputs:
   - {name: tensorboard_root}
@@ -30,3 +31,5 @@ implementation:
       - {outputPath: MLPipeline Metrics}
       - --confusion_matrix_url
       - { inputValue: confusion_matrix_url}
+      - --num_samples
+      - { inputValue: num_samples}

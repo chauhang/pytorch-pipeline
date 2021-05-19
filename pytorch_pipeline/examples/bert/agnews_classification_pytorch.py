@@ -43,6 +43,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--num_samples",
+    type=int,
+    default=1000,
+    help="Number of samples to use for training",
+)
+
+parser.add_argument(
     "--mlpipeline_ui_metadata",
     type=str,
     help="Path to write mlpipeline-ui-metadata.json",
@@ -100,6 +107,7 @@ if "profiler" in args and args["profiler"] != "":
 # Setting the datamodule specific arguments
 data_module_args = {
     "train_glob": args["dataset_path"],
+    "num_samples": args["num_samples"]
 }
 
 
