@@ -86,9 +86,17 @@ def pytorch_cifar10(
         train_op(
             input_data=prep_task.outputs["output_data"],
             profiler="pytorch",
-            confusion_matrix_url=f"s3://{confusion_matrix_bucket}/{confusion_matrix_log_dir}",
+            confusion_matrix_url=f"minio://{log_bucket}/{confusion_matrix_log_dir}",
         )
-        .apply(use_aws_secret('aws-secret', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'us-east-2'))
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
         .after(prep_task)
         .set_display_name("Training")
     )

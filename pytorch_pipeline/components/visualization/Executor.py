@@ -48,7 +48,7 @@ class Executor(BaseExecutor):
         # }
 
         source_str = json.dumps(markdown_dict["source"], sort_keys=True, indent=4)
-        source = f"``` {source_str} ```"
+        source = f"```json \n {source_str} ```"
         markdown_metadata = {
             "storage": markdown_dict["storage"],
             "source": source,
@@ -97,34 +97,34 @@ class Executor(BaseExecutor):
 
         confusion_matrix_df = pd.DataFrame(data, columns=["target", "predicted", "count"])
 
-        # confusion_matrix_output_dir = str(tempfile.mkdtemp())
-        # confusion_matrix_output_path = os.path.join(
-        #     confusion_matrix_output_dir, "confusion_matrix.csv"
-        # )
-        # saving confusion matrix
-        # confusion_matrix_df.to_csv(confusion_matrix_output_path, index=False, header=False)
+        confusion_matrix_output_dir = str(tempfile.mkdtemp())
+        confusion_matrix_output_path = os.path.join(
+            confusion_matrix_output_dir, "confusion_matrix.csv"
+        )
+        #saving confusion matrix
+        confusion_matrix_df.to_csv(confusion_matrix_output_path, index=False, header=False)
 
         parse_obj = urlparse(confusion_matrix_url, allow_fragments=False)
         bucket_name = parse_obj.netloc
         folder_name = str(parse_obj.path).lstrip("/")
-        confusion_matrix_key = os.path.join(folder_name, "confusion_matrix.csv")
+        # confusion_matrix_key = os.path.join(folder_name, "confusion_matrix.csv")
 
         print("Bucket name: ", bucket_name)
         print("Folder name: ", folder_name)
 
-        csv_buffer = StringIO()
-        confusion_matrix_df.to_csv(csv_buffer, index=False, header=False)
-        s3_resource = boto3.resource("s3")
-
-        s3_resource.Object(bucket_name, confusion_matrix_key).put(Body=csv_buffer.getvalue())
-        # # TODO:
-        # endpoint = "minio-service.kubeflow:9000"
-        # MinIO(
-        #     source=confusion_matrix_output_path,
-        #     bucket_name=bucket_name,
-        #     destination=folder_name,
-        #     endpoint=endpoint,
-        # )
+        # csv_buffer = StringIO()
+        # confusion_matrix_df.to_csv(csv_buffer, index=False, header=False)
+        # s3_resource = boto3.resource("s3")
+        #
+        # s3_resource.Object(bucket_name, confusion_matrix_key).put(Body=csv_buffer.getvalue())
+        # TODO:
+        endpoint = "minio-service.kubeflow:9000"
+        MinIO(
+            source=confusion_matrix_output_path,
+            bucket_name=bucket_name,
+            destination=folder_name,
+            endpoint=endpoint,
+        )
 
         # Generating metadata
         self._generate_confusion_matrix_metadata(
