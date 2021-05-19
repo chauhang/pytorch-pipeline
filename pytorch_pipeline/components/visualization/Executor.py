@@ -30,23 +30,6 @@ class Executor(BaseExecutor):
             json.dump(metadata, fp)
 
     def _generate_markdown(self, markdown_dict):
-
-        ##### Plain Markdonw
-        # markdown_metadata = {
-        #     "storage": markdown_dict["storage"],
-        #     "source": json.dumps(markdown_dict["source"]),
-        #     "type": "markdown",
-        # }
-
-        ###### Web APP
-        # source_str = json.dumps(markdown_dict["source"])
-        # source = f"<font size='5'> {source_str} <font/>"
-        # markdown_metadata = {
-        #     "storage": markdown_dict["storage"],
-        #     "source": source,
-        #     "type": "web-app",
-        # }
-
         source_str = json.dumps(markdown_dict["source"], sort_keys=True, indent=4)
         source = f"```json \n {source_str} ```"
         markdown_metadata = {
@@ -54,7 +37,6 @@ class Executor(BaseExecutor):
             "source": source,
             "type": "markdown",
         }
-
 
         self._write_ui_metadata(
             metadata_filepath=self.mlpipeline_ui_metadata, metadata_dict=markdown_metadata
@@ -101,22 +83,13 @@ class Executor(BaseExecutor):
         confusion_matrix_output_path = os.path.join(
             confusion_matrix_output_dir, "confusion_matrix.csv"
         )
-        #saving confusion matrix
+        # saving confusion matrix
         confusion_matrix_df.to_csv(confusion_matrix_output_path, index=False, header=False)
 
         parse_obj = urlparse(confusion_matrix_url, allow_fragments=False)
         bucket_name = parse_obj.netloc
         folder_name = str(parse_obj.path).lstrip("/")
-        # confusion_matrix_key = os.path.join(folder_name, "confusion_matrix.csv")
 
-        print("Bucket name: ", bucket_name)
-        print("Folder name: ", folder_name)
-
-        # csv_buffer = StringIO()
-        # confusion_matrix_df.to_csv(csv_buffer, index=False, header=False)
-        # s3_resource = boto3.resource("s3")
-        #
-        # s3_resource.Object(bucket_name, confusion_matrix_key).put(Body=csv_buffer.getvalue())
         # TODO:
         endpoint = "minio-service.kubeflow:9000"
         MinIO(
