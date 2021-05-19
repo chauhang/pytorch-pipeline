@@ -93,7 +93,7 @@ class Executor(BaseExecutor):
         parse_obj = urlparse(confusion_matrix_url, allow_fragments=False)
         bucket_name = parse_obj.netloc
         folder_name = str(parse_obj.path).lstrip("/")
-        confusion_matrix_key = os.path.join(folder_name, "confusion_df.csv")
+        confusion_matrix_key = os.path.join(folder_name, "confusion_matrix.csv")
 
         print("Bucket name: ", bucket_name)
         print("Folder name: ", folder_name)
