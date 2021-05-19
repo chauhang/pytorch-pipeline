@@ -75,7 +75,7 @@ if __name__ == "__main__":
         label_name = label_names[key - 1]
         label_dict[label_name.upper()] = value
 
-    label_dict["total_count"] = total_count
+    label_dict["TOTAL_COUNT"] = total_count
 
     markdown_dict = {"storage": "inline", "source": label_dict}
 
