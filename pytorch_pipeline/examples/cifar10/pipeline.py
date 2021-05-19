@@ -5,7 +5,6 @@ from kfp import components
 from kfp.components import load_component_from_file
 from kfp import dsl
 from kfp import compiler
-from kfp.aws import use_aws_secret
 
 
 yaml_folder_path = "examples/cifar10/yaml"
@@ -36,7 +35,6 @@ def pytorch_cifar10(
     deploy="torchserve",
     model="cifar10",
     namespace="kubeflow-user-example-com",
-    confusion_matrix_bucket="kubeflow-dataset",
     confusion_matrix_log_dir=f"confusion_matrix/{dsl.RUN_ID_PLACEHOLDER}/",
 ):
     pod_template_spec = json.dumps(

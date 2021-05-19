@@ -1,6 +1,5 @@
 import pytorch_lightning as pl
 import os
-import json
 from pytorch_pipeline.components.trainer.component import Trainer
 from pytorch_pipeline.components.mar.mar_generation import MarGeneration
 from argparse import ArgumentParser
