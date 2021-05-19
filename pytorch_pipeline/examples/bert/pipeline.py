@@ -33,7 +33,7 @@ def pytorch_bert(
     deploy="bertserve",
     namespace="kubeflow-user-example-com",
     confusion_matrix_log_dir=f"confusion_matrix/{dsl.RUN_ID_PLACEHOLDER}/",
-    num_samples=100
+    num_samples=1000
 ):
 
     prepare_tb_task = prepare_tensorboard_op(
