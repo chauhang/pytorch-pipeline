@@ -6,6 +6,7 @@ from pathlib import Path
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
 from torchtext.utils import download_from_url, extract_archive
+from pytorch_pipeline.components.visualization.component import Visualization
 
 if __name__ == "__main__":
 
@@ -22,6 +23,12 @@ if __name__ == "__main__":
         default="output/processing",
         type=str,
         help="Path to write the ag news dataset",
+    )
+
+    parser.add_argument(
+        "--mlpipeline_ui_metadata",
+        type=str,
+        help="Path to write mlpipeline-ui-metadata.json",
     )
 
     args = vars(parser.parse_args())
@@ -41,3 +48,38 @@ if __name__ == "__main__":
     entry_point = ["ls", "-R", output_path]
     run_code = subprocess.run(entry_point, stdout=subprocess.PIPE)
     print(run_code.stdout)
+
+    visualization_arguments = {
+        "inputs": {"dataset_url": args["dataset_url"]},
+        "output": {
+            "mlpipeline_ui_metadata": args["mlpipeline_ui_metadata"],
+        },
+    }
+
+    markdown_dict = {"storage": "inline", "source": visualization_arguments}
+
+    print("Visualization arguments: ", markdown_dict)
+
+    visualization = Visualization(
+        mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+        markdown=markdown_dict,
+    )
+
+    df = ag_news_csv.to_pandas()
+    df_counts = df.iloc[:, 0].value_counts()
+    print(df.iloc[:, 0].value_counts())
+    label_names = ["World", "Sports", "Business", "Sci/Tech"]
+    label_dict = {}
+    total_count = len(df)
+    for key, value in df_counts.iteritems():
+        label_name = label_names[key - 1]
+        label_dict[label_name.upper()] = value
+
+    label_dict["TOTAL_COUNT"] = total_count
+
+    markdown_dict = {"storage": "inline", "source": label_dict}
+
+    visualization = Visualization(
+        mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+        markdown=markdown_dict,
+    )

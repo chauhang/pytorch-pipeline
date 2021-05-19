@@ -39,6 +39,9 @@ class BertNewsClassifier(pl.LightningModule):
         self.val_acc = Accuracy()
         self.test_acc = Accuracy()
 
+        self.preds = []
+        self.target = []
+
     def compute_bert_outputs(
         self, model_bert, embedding_input, attention_mask=None, head_mask=None
     ):
@@ -131,6 +134,8 @@ class BertNewsClassifier(pl.LightningModule):
         _, y_hat = torch.max(output, dim=1)
         test_acc = accuracy_score(y_hat.cpu(), targets.cpu())
         self.test_acc(y_hat, targets)
+        self.preds += y_hat.tolist()
+        self.target += targets.tolist()
         self.log("test_acc", self.test_acc.compute())
         return {"test_acc": torch.tensor(test_acc)}
 

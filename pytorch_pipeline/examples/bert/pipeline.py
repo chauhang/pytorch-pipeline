@@ -30,8 +30,10 @@ def pytorch_bert(
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
     model_uri=f"s3://mlpipeline/mar/{dsl.RUN_ID_PLACEHOLDER}",
     tf_image="jagadeeshj/tb_plugin:v1.8",
-    deploy = "bertserve",
-    namespace = "kubeflow-user-example-com"
+    deploy="bertserve",
+    namespace="kubeflow-user-example-com",
+    confusion_matrix_log_dir=f"confusion_matrix/{dsl.RUN_ID_PLACEHOLDER}/",
+    num_samples=1000
 ):
 
     prepare_tb_task = prepare_tensorboard_op(
@@ -75,7 +77,21 @@ def pytorch_bert(
 
     prep_task = prep_op().after(prepare_tb_task).set_display_name("Preprocess & Transform")
     train_task = (
-        train_op(input_data=prep_task.outputs["output_data"], profiler="pytorch")
+        train_op(
+            input_data=prep_task.outputs["output_data"],
+            profiler="pytorch",
+            confusion_matrix_url=f"minio://{log_bucket}/{confusion_matrix_log_dir}",
+            num_samples=num_samples
+        )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
         .after(prep_task)
         .set_display_name("Training")
     )
