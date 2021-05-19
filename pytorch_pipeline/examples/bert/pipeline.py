@@ -33,6 +33,7 @@ def pytorch_bert(
     deploy="bertserve",
     namespace="kubeflow-user-example-com",
     confusion_matrix_log_dir=f"confusion_matrix/{dsl.RUN_ID_PLACEHOLDER}/",
+    num_samples=100
 ):
 
     prepare_tb_task = prepare_tensorboard_op(
@@ -80,7 +81,7 @@ def pytorch_bert(
             input_data=prep_task.outputs["output_data"],
             profiler="pytorch",
             confusion_matrix_url=f"minio://{log_bucket}/{confusion_matrix_log_dir}",
-            num_samples=1000
+            num_samples=num_samples
         )
         .apply(
             use_k8s_secret(
