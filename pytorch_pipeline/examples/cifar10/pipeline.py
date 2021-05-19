@@ -8,9 +8,7 @@ from kfp import compiler
 from kfp.aws import use_aws_secret
 
 
-minio_endpoint = "http://minio-service.kubeflow:9000"
-
-yaml_folder_path = "pytorch_pipeline/examples/cifar10/yaml"
+yaml_folder_path = "examples/cifar10/yaml"
 
 prepare_tensorboard_op = load_component_from_file(f"{yaml_folder_path}/tensorboard/component.yaml")
 prep_op = components.load_component_from_file(f"{yaml_folder_path}/pre_process/component.yaml")
@@ -24,6 +22,7 @@ minio_op = components.load_component_from_file(f"{yaml_folder_path}/minio/compon
 
 @dsl.pipeline(name="Training Cifar10 pipeline", description="Cifar 10 dataset pipeline")
 def pytorch_cifar10(
+    minio_endpoint = "http://minio-service.kubeflow:9000",
     log_dir=f"tensorboard/logs/{dsl.RUN_ID_PLACEHOLDER}/",
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
