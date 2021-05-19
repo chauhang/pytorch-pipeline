@@ -1,4 +1,5 @@
 import subprocess
+import numpy as np
 from pathlib import Path
 
 import torchvision
@@ -56,6 +57,36 @@ if __name__ == "__main__":
     markdown_dict = {"storage": "inline", "source": visualization_arguments}
 
     print("Visualization arguments: ", markdown_dict)
+
+    visualization = Visualization(
+        mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+        markdown=markdown_dict,
+    )
+
+    y_array = np.array(y)
+
+    label_names = [
+        "airplane",
+        "automobile",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck",
+    ]
+    label_counts = dict(zip(*np.unique(y_array, return_counts=True)))
+    label_dict = {}
+    total_count = len(y)
+    for key, value in label_counts.items():
+        print("Label Counts of [{}]({}) : {}".format(key, label_names[key].upper(), value))
+        label_dict[label_names[key].upper()] = value
+
+    label_dict["total_count"] = total_count
+
+    markdown_dict = {"storage": "inline", "source": label_dict}
 
     visualization = Visualization(
         mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],

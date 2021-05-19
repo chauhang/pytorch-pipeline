@@ -64,3 +64,22 @@ if __name__ == "__main__":
         mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
         markdown=markdown_dict,
     )
+
+    df = ag_news_csv.to_pandas()
+    df_counts = df.iloc[:, 0].value_counts()
+    print(df.iloc[:, 0].value_counts())
+    label_names = ["World", "Sports", "Business", "Sci/Tech"]
+    label_dict = {}
+    total_count = len(df)
+    for key, value in df_counts.iteritems():
+        label_name = label_names[key - 1]
+        label_dict[label_name.upper()] = value
+
+    label_dict["total_count"] = total_count
+
+    markdown_dict = {"storage": "inline", "source": label_dict}
+
+    visualization = Visualization(
+        mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+        markdown=markdown_dict,
+    )
