@@ -5,10 +5,13 @@ description: |
 inputs:
   - {name: input_data}
   - {name: profiler}
+  - {name: confusion_matrix_url}
 
 outputs:
   - {name: tensorboard_root}
   - {name: checkpoint_dir}
+  - {name: MLPipeline UI Metadata}
+  - {name: MLPipeline Metrics}
   
   
 implementation:
@@ -24,3 +27,9 @@ implementation:
     - {outputPath: checkpoint_dir}
     - --profiler
     - {inputValue: profiler}
+    - --mlpipeline_ui_metadata
+    - {outputPath: MLPipeline UI Metadata}
+    - --mlpipeline_metrics
+    - { outputPath: MLPipeline Metrics}
+    - --confusion_matrix_url
+    - { inputValue: confusion_matrix_url}

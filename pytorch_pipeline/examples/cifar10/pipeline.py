@@ -35,50 +35,65 @@ def pytorch_cifar10(
     deploy="torchserve",
     model="cifar10",
     namespace="kubeflow-user-example-com",
+    confusion_matrix_log_dir=f"confusion_matrix/{dsl.RUN_ID_PLACEHOLDER}/",
 ):
+    pod_template_spec = json.dumps(
+        {
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "AWS_ACCESS_KEY_ID",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "name": "mlpipeline-minio-artifact",
+                                        "key": "accesskey",
+                                    }
+                                },
+                            },
+                            {
+                                "name": "AWS_SECRET_ACCESS_KEY",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "name": "mlpipeline-minio-artifact",
+                                        "key": "secretkey",
+                                    }
+                                },
+                            },
+                            {"name": "AWS_REGION", "value": "minio"},
+                            {"name": "S3_ENDPOINT", "value": f"{minio_endpoint}"},
+                            {"name": "S3_USE_HTTPS", "value": "0"},
+                            {"name": "S3_VERIFY_SSL", "value": "0"},
+                        ]
+                    }
+                ]
+            }
+        }
+    )
 
     prepare_tb_task = prepare_tensorboard_op(
         log_dir_uri=f"s3://{log_bucket}/{log_dir}",
         image=tf_image,
-        pod_template_spec=json.dumps(
-            {
-                "spec": {
-                    "containers": [
-                        {
-                            "env": [
-                                {
-                                    "name": "AWS_ACCESS_KEY_ID",
-                                    "valueFrom": {
-                                        "secretKeyRef": {
-                                            "name": "mlpipeline-minio-artifact",
-                                            "key": "accesskey",
-                                        }
-                                    },
-                                },
-                                {
-                                    "name": "AWS_SECRET_ACCESS_KEY",
-                                    "valueFrom": {
-                                        "secretKeyRef": {
-                                            "name": "mlpipeline-minio-artifact",
-                                            "key": "secretkey",
-                                        }
-                                    },
-                                },
-                                {"name": "AWS_REGION", "value": "minio"},
-                                {"name": "S3_ENDPOINT", "value": f"{minio_endpoint}"},
-                                {"name": "S3_USE_HTTPS", "value": "0"},
-                                {"name": "S3_VERIFY_SSL", "value": "0"},
-                            ]
-                        }
-                    ]
-                }
-            }
-        ),
+        pod_template_spec=pod_template_spec,
     ).set_display_name("Visualization")
 
     prep_task = prep_op().after(prepare_tb_task).set_display_name("Preprocess & Transform")
     train_task = (
-        train_op(input_data=prep_task.outputs["output_data"], profiler="pytorch")
+        train_op(
+            input_data=prep_task.outputs["output_data"],
+            profiler="pytorch",
+            confusion_matrix_url=f"minio://{log_bucket}/{confusion_matrix_log_dir}",
+        )
+        .apply(
+            use_k8s_secret(
+                secret_name="mlpipeline-minio-artifact",
+                k8s_secret_key_to_env={
+                    "secretkey": "MINIO_SECRET_KEY",
+                    "accesskey": "MINIO_ACCESS_KEY",
+                },
+            )
+        )
         .after(prep_task)
         .set_display_name("Training")
     )
@@ -158,7 +173,11 @@ def pytorch_cifar10(
     """.format(
         deploy, namespace, model_uri
     )
-    deploy_task = deploy_op(action="apply", inferenceservice_yaml=isvc_yaml).after(minio_mar_upload).set_display_name("Deployer")
+    deploy_task = (
+        deploy_op(action="apply", inferenceservice_yaml=isvc_yaml)
+        .after(minio_mar_upload)
+        .set_display_name("Deployer")
+    )
     pred_task = (
         pred_op(
             host_name=isvc_name,

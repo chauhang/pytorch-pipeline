@@ -48,7 +48,7 @@ class Trainer(BaseComponent):
 
             print(model_class, data_module_class)
 
-            Executor().Do(
+            self.ptl_trainer = Executor().Do(
                 model_class=model_class,
                 data_module_class=data_module_class,
                 data_module_args=data_module_args,

@@ -1,31 +1,9 @@
-import logging
 import os
-import shutil
-from itertools import islice
-from pathlib import Path
-from random import sample
 
-import numpy as np
 import pytorch_lightning as pl
-import torch
-import torch.nn.functional as F
-import torchvision
 import webdataset as wds
-from PIL import Image
-from pytorch_lightning.callbacks import (
-    EarlyStopping,
-    LearningRateMonitor,
-    ModelCheckpoint,
-)
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.metrics import Accuracy
-from torch import nn
-from torch.multiprocessing import Queue
-from torch.utils.data import DataLoader, IterableDataset
-from torchvision import models, transforms
-import boto3
-from botocore.exceptions import ClientError
-import matplotlib.pyplot as plt
+from torch.utils.data import DataLoader
+from torchvision import transforms
 
 
 class CIFAR10DataModule(pl.LightningDataModule):

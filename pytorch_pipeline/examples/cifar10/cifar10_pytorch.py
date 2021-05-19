@@ -9,6 +9,7 @@ from pytorch_lightning.callbacks import (
     LearningRateMonitor,
     ModelCheckpoint,
 )
+from pytorch_pipeline.components.visualization.component import Visualization
 
 
 # Argument parser for user defined paths
@@ -41,6 +42,32 @@ parser.add_argument(
     default="resnet.pth",
     help="Name of the model to be saved as (default: resnet.pth)",
 )
+
+parser.add_argument(
+    "--mlpipeline_ui_metadata",
+    type=str,
+    help="Path to write mlpipeline-ui-metadata.json",
+)
+
+parser.add_argument(
+    "--mlpipeline_metrics",
+    type=str,
+    help="Path to write mlpipeline-metrics.json",
+)
+
+parser.add_argument(
+    "--confusion_matrix_url",
+    type=str,
+    help="Minio url to generate confusion matrix",
+)
+
+parser.add_argument(
+    "--pod_template_spec",
+    type=str,
+    default=None,
+    help="Pod template spec",
+)
+
 
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
@@ -107,3 +134,63 @@ mar_config = {
 
 
 MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
+
+classes = [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck",
+]
+
+model = trainer.ptl_trainer.model
+
+target_index_list = list(set(model.target))
+
+class_list = []
+for index in target_index_list:
+    class_list.append(classes[index])
+
+
+confusion_matrix_dict = {
+    "actuals": model.target,
+    "preds": model.preds,
+    "classes": class_list,
+    "url": args["confusion_matrix_url"],
+}
+
+test_accuracy = round(float(model.test_acc.compute()), 2)
+
+print("Model test accuracy: ", test_accuracy)
+
+visualization_arguments = {
+    "input": {
+        "tensorboard_root": args["tensorboard_root"],
+        "checkpoint_dir": args["checkpoint_dir"],
+        "dataset_path": args["dataset_path"],
+        "model_name": args["model_name"],
+        "confusion_matrix_url": args["confusion_matrix_url"],
+    },
+    "output": {
+        "mlpipeline_ui_metadata": args["mlpipeline_ui_metadata"],
+        "mlpipeline_metrics": args["mlpipeline_metrics"],
+    },
+}
+
+markdown_dict = {"storage": "inline", "source": visualization_arguments}
+
+print("Visualization Arguments: ", markdown_dict)
+
+visualization = Visualization(
+    # test_accuracy=test_accuracy,
+    confusion_matrix_dict=confusion_matrix_dict,
+    # pod_template_spec=args["pod_template_spec"],
+    mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+    # mlpipeline_metrics=args["mlpipeline_metrics"],
+    # markdown=markdown_dict,
+)
