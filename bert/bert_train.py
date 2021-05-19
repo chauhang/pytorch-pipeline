@@ -29,6 +29,7 @@ import boto3
 from botocore.exceptions import ClientError
 import shutil
 
+
 class BertNewsClassifier(pl.LightningModule):
     def __init__(self, **kwargs):
         """
@@ -46,8 +47,8 @@ class BertNewsClassifier(pl.LightningModule):
 
         self.fc1 = nn.Linear(self.bert_model.config.hidden_size, 512)
         self.out = nn.Linear(512, n_classes)
-        self.bert_model.embedding = self.bert_model.embeddings
-        self.embedding = self.bert_model.embeddings
+        # self.bert_model.embedding = self.bert_model.embeddings
+        # self.embedding = self.bert_model.embeddings
 
         self.scheduler = None
         self.optimizer = None
@@ -57,15 +58,58 @@ class BertNewsClassifier(pl.LightningModule):
         self.val_acc = Accuracy()
         self.test_acc = Accuracy()
 
-    def forward(self, input_ids, attention_mask):
+    def compute_bert_outputs(
+        self, model_bert, embedding_input, attention_mask=None, head_mask=None
+    ):
+        if attention_mask is None:
+            attention_mask = torch.ones(embedding_input.shape[0], embedding_input.shape[1]).to(
+                embedding_input
+            )
+
+        extended_attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
+
+        extended_attention_mask = extended_attention_mask.to(
+            dtype=next(model_bert.parameters()).dtype
+        )  # fp16 compatibility
+        extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
+
+        if head_mask is not None:
+            if head_mask.dim() == 1:
+                head_mask = head_mask.unsqueeze(0).unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
+                head_mask = head_mask.expand(model_bert.config.num_hidden_layers, -1, -1, -1, -1)
+            elif head_mask.dim() == 2:
+                head_mask = (
+                    head_mask.unsqueeze(1).unsqueeze(-1).unsqueeze(-1)
+                )  # We can specify head_mask for each layer
+            head_mask = head_mask.to(
+                dtype=next(model_bert.parameters()).dtype
+            )  # switch to fload if need + fp16 compatibility
+        else:
+            head_mask = [None] * model_bert.config.num_hidden_layers
+
+        encoder_outputs = model_bert.encoder(
+            embedding_input, extended_attention_mask, head_mask=head_mask
+        )
+        sequence_output = encoder_outputs[0]
+        pooled_output = model_bert.pooler(sequence_output)
+        outputs = (
+            sequence_output,
+            pooled_output,
+        ) + encoder_outputs[1:]
+        return outputs
+
+    def forward(self, input_ids, attention_mask=None):
         """
         :param input_ids: Input data
         :param attention_maks: Attention mask value
 
         :return: output - Type of news for the given news snippet
         """
-        output = self.bert_model(input_ids=input_ids, attention_mask=attention_mask)
-        output = F.relu(self.fc1(output.pooler_output))
+        embedding_input = self.bert_model.embeddings(input_ids)
+        # output = self.bert_model(input_ids=input_ids, attention_mask=attention_mask)
+        outputs = self.compute_bert_outputs(self.bert_model, embedding_input)
+        pooled_output = outputs[1]
+        output = F.relu(self.fc1(pooled_output))
         output = self.drop(output)
         output = self.out(output)
         return output
@@ -160,7 +204,7 @@ def train_model(
     num_workers: int,
     learning_rate: int,
     accelerator: str,
-    model_save_path: str
+    model_save_path: str,
 ):
     """
     method to train and validate the model
@@ -193,6 +237,7 @@ def train_model(
     }
 
     from bert_datamodule import BertDataModule
+
     dm = BertDataModule(**dict_args)
     dm.prepare_data()
     dm.setup(stage="fit")
@@ -216,7 +261,7 @@ def train_model(
         save_top_k=1,
         verbose=True,
         monitor="val_loss",
-        mode="min"
+        mode="min",
     )
     lr_logger = LearningRateMonitor()
 
@@ -230,7 +275,7 @@ def train_model(
 
     trainer.fit(model, dm)
     trainer.test()
-    torch.save(model.state_dict(), os.path.join(model_save_path, 'bert.pth'))
+    torch.save(model.state_dict(), os.path.join(model_save_path, "bert.pth"))
 
 
 if __name__ == "__main__":
@@ -245,13 +290,22 @@ if __name__ == "__main__":
     print("INPUT_PARAMETERS:::")
     print(input_parameters)
 
-    tensorboard_root = input_parameters['tensorboard_root']
-    max_epochs = input_parameters['max_epochs']
-    num_samples = input_parameters['num_samples']
-    batch_size = input_parameters['batch_size']
-    num_workers = input_parameters['num_workers']
-    learning_rate = input_parameters['learning_rate']
-    accelerator = input_parameters['accelerator']
+    tensorboard_root = input_parameters["tensorboard_root"]
+    max_epochs = input_parameters["max_epochs"]
+    num_samples = input_parameters["num_samples"]
+    batch_size = input_parameters["batch_size"]
+    num_workers = input_parameters["num_workers"]
+    learning_rate = input_parameters["learning_rate"]
+    accelerator = input_parameters["accelerator"]
 
-    train_model(data_set, tensorboard_root, max_epochs, num_samples, 
-                batch_size, num_workers, learning_rate, accelerator, output_path)
+    train_model(
+        data_set,
+        tensorboard_root,
+        max_epochs,
+        num_samples,
+        batch_size,
+        num_workers,
+        learning_rate,
+        accelerator,
+        output_path,
+    )
