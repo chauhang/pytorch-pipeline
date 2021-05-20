@@ -128,7 +128,7 @@ class Executor(BaseExecutor):
             metadata_filepath=self.mlpipeline_metrics, metadata_dict=metadata, key="metrics"
         )
 
-    def Do(self, confusion_matrix_dict=None, test_accuracy=None, markdown=None):
+    def Do(self, confusion_matrix_dict=None, test_accuracy=None, markdown=None, table=None):
         if confusion_matrix_dict:
             self._generate_confusion_matrix(
                 confusion_matrix_dict=confusion_matrix_dict,
