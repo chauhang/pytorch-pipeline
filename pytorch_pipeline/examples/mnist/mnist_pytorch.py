@@ -86,7 +86,6 @@ total_trials = 2
 ax_hpo = AxOptimization(total_trials, ax_params)
 ax_hpo.run_ax_get_best_parameters(
     module_file_args=args,
-    max_epochs=max_epochs,
     data_module_args=None,
     trainer_args=trainer_args,
     model_file_name=model_file_name,
