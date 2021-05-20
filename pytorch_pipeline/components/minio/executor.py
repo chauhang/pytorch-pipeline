@@ -7,6 +7,7 @@ class Executor(BaseExecutor):
         super(Executor, self).__init__()
 
     def _upload_artifacts_to_minio(self, client, source, destination, bucket_name):
+        print(f"source {source} destination {destination}")
         result = client.fput_object(
             bucket_name=bucket_name,
             file_path=source,

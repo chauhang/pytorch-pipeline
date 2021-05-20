@@ -193,3 +193,6 @@ visualization = Visualization(
     mlpipeline_metrics=args["mlpipeline_metrics"],
     markdown=markdown_dict,
 )
+
+checpoint_dir_contents = os.listdir(args['checkpoint_dir'])
+print(f"Checkpoint Directory Contents: {checpoint_dir_contents}")
