@@ -125,8 +125,8 @@ class MarGeneration:
         print("Saving model file ")
         ## TODO: While separating the mar generation component from trainer
         ## Create a separate url for model file
-        if "EXPORT_PATH" in self.mar_config:
-            shutil.copy(self.mar_config["MODEL_FILE"], self.mar_config["EXPORT_PATH"])
+        print(f"copying {self.mar_config['MODEL_FILE']} to {self.mar_config['EXPORT_PATH']}")
+        shutil.copy(self.mar_config["MODEL_FILE"], self.mar_config["EXPORT_PATH"])
 
         print("Downloading config properties")
         if "CONFIG_PROPERTIES" in self.mar_config:
