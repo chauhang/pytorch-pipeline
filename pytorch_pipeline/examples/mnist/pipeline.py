@@ -12,7 +12,6 @@ log_bucket = "mlpipeline"
 ax_path = f"ax/summary/{dsl.RUN_ID_PLACEHOLDER}"
 
 prepare_tensorboard_op = load_component_from_file(f"{yaml_folder_path}/tensorboard/component.yaml")
-prep_op = components.load_component_from_file(f"{yaml_folder_path}/pre_process/component.yaml")
 train_op = components.load_component_from_file(f"{yaml_folder_path}/train/component.yaml")
 deploy_op = load_component_from_file(f"{yaml_folder_path}/deploy/component.yaml")
 pred_op = components.load_component_from_file(f"{yaml_folder_path}/prediction/component.yaml")
