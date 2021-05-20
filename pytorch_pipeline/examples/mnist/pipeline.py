@@ -119,7 +119,7 @@ def pytorch_mnist(
             bucket_name="mlpipeline",
             folder_name=mar_path,
             input_path=train_task.outputs["checkpoint_dir"],
-            filename="cifar10_test.mar",
+            filename="mnist_best.mar",
         )
         .apply(
             use_k8s_secret(

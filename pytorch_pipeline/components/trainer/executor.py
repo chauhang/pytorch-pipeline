@@ -33,6 +33,7 @@ class Executor(GenericExecutor):
             from argparse import Namespace
 
             trainer_args.update(module_file_args)
+            print("/n/n This is trainer args",trainer_args)
             parser = Namespace(**trainer_args)
             trainer = pl.Trainer.from_argparse_args(parser)
 
