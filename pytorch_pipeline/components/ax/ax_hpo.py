@@ -96,11 +96,11 @@ class AxOptimization:
         print("Best Trial Index", best_trail_index)
         print(best_parameters)
 
-        save_path = module_file_args["save_path"]
+#        save_path = module_file_args["save_path"]
 
-        Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
+#        Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
 
         # best_parameters_file = os.path.join(os.path.abspath(save_path), 'best_parameters.json')
 
-        with open(save_path, "w") as fp:
-            json.dump(best_parameters, fp)
+#        with open(save_path, "w") as fp:
+#            json.dump(best_parameters, fp)

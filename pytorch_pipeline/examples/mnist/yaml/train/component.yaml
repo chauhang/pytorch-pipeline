@@ -20,8 +20,6 @@ implementation:
     - {outputPath: tensorboard_root}
     - --checkpoint_dir
     - {outputPath: checkpoint_dir}
-    - --save_path
-    - {outputPath: MLPipeline UI Metadata}
     - --summary_url
     - {inputValue: summary_url}
     - --mlpipeline_ui_metadata

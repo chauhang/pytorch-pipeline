@@ -34,13 +34,6 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--save_path",
-    type=str,
-    default="output/best_parameters",
-    help="Name of the model to be saved as (default: resnet.pth)",
-)
-
-parser.add_argument(
     "--summary_url",
     type=str,
     help="Minio url to generate Ax-Experiment-Summary)",
@@ -90,8 +83,7 @@ ax_params = [
 
 total_trials = 2
 ax_hpo = AxOptimization(total_trials, ax_params)
-#columns = ax_hpo.columns
-#print(x for x in columns)
+
 ax_hpo.run_ax_get_best_parameters(
     module_file_args=args,
     data_module_args=None,
@@ -116,8 +108,6 @@ mar_config = {
 MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
 
 columns = ax_hpo.columns
-print(columns)
-print(x for x in columns)
 
 
 table_dict = {
