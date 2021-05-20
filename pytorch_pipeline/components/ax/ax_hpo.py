@@ -64,6 +64,8 @@ class AxOptimization:
         best_parameters, metrics = ax_client.get_best_parameters()
         trials_df = ax_client.get_trials_data_frame()
         trials_df.to_csv("summary.csv")
+        columns = trials_df.columns
+        self.columns = columns
         print("This is sum url", module_file_args["summary_url"])
         parse_obj = urlparse(module_file_args["summary_url"], allow_fragments=False)
         bucket_name = parse_obj.netloc

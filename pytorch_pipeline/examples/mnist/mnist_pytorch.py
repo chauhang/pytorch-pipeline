@@ -5,6 +5,7 @@ from pytorch_pipeline.components.ax.ax_hpo import AxOptimization
 from pathlib import Path
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_pipeline.components.mar.mar_generation import MarGeneration
+from pytorch_pipeline.components.visualization.component import Visualization
 
 
 # Argument parser for user defined paths
@@ -45,6 +46,11 @@ parser.add_argument(
     help="Minio url to generate Ax-Experiment-Summary)",
 )
 
+parser.add_argument(
+    "--mlpipeline_ui_metadata",
+    type=str,
+    help="Path to write mlpipeline-ui-metadata.json",
+)
 
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
@@ -84,6 +90,8 @@ ax_params = [
 
 total_trials = 2
 ax_hpo = AxOptimization(total_trials, ax_params)
+#columns = ax_hpo.columns
+#print(x for x in columns)
 ax_hpo.run_ax_get_best_parameters(
     module_file_args=args,
     data_module_args=None,
@@ -106,3 +114,21 @@ mar_config = {
 
 
 MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
+
+columns = ax_hpo.columns
+print(columns)
+print(x for x in columns)
+
+
+table_dict = {
+    'type': 'table',
+    'storage': 'minio',
+    'format': 'csv',
+    'header': [x for x in columns],
+    'source': args["summary_url"]
+      }
+
+visualization = Visualization(
+    mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+    table=table_dict,
+)

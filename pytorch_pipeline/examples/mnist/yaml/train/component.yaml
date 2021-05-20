@@ -24,4 +24,5 @@ implementation:
     - {outputPath: MLPipeline UI Metadata}
     - --summary_url
     - {inputValue: summary_url}
-    
+    - --mlpipeline_ui_metadata
+    - {outputPath: MLPipeline UI Metadata}

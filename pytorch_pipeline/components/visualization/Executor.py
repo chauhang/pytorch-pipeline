@@ -41,6 +41,19 @@ class Executor(BaseExecutor):
         self._write_ui_metadata(
             metadata_filepath=self.mlpipeline_ui_metadata, metadata_dict=markdown_metadata
         )
+        
+    def _generate_table(self, table_dict):
+        table_metadata = {
+            "storage": table_dict["storage"],
+            "source": table_dict["source"],
+            "type": table_dict["type"],
+            "format": table_dict["format"],
+            "header": table_dict["header"],
+            }
+
+        self._write_ui_metadata(
+            metadata_filepath=self.mlpipeline_ui_metadata, metadata_dict=table_metadata
+        )
 
     def _generate_confusion_matrix_metadata(self, confusion_matrix_path, classes):
         print("Generating Confusion matrix Metadata")
@@ -126,3 +139,7 @@ class Executor(BaseExecutor):
 
         if markdown:
             self._generate_markdown(markdown_dict=markdown)
+            
+        if table:
+            self._generate_table(table_dict=table)
+            
