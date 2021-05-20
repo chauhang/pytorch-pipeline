@@ -24,7 +24,7 @@ def pytorch_cifar10(
     minio_endpoint = "http://minio-service.kubeflow:9000",
     log_dir=f"tensorboard/logs/{dsl.RUN_ID_PLACEHOLDER}/",
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
-    checkpoint_dir=f"checkpoint_dir/cifar10/{dsl.RUN_ID_PLACEHOLDER}",
+    checkpoint_dir=f"checkpoint_dir/cifar10",
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
     model_uri=f"s3://mlpipeline/mar/{dsl.RUN_ID_PLACEHOLDER}",
     tf_image="jagadeeshj/tb_plugin:v1.8",
