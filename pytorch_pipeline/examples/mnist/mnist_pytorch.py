@@ -49,7 +49,7 @@ parser.add_argument(
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
 args = vars(parser.parse_args())
-print(args)
+print("/n/n This is args[max_epochs]",args["max_epochs"])
 
 
 # Enabling Tensorboard Logger, ModelCheckpoint, Earlystopping
@@ -57,15 +57,15 @@ print(args)
 Path(args["tensorboard_root"]).mkdir(parents=True, exist_ok=True)
 tboard = TensorBoardLogger(args["tensorboard_root"])
 
-if not args["max_epochs"]:
-    max_epochs = 1
-else:
-    max_epochs = args["max_epochs"]
-
-
+if args["max_epochs"]==None:
+    args["max_epochs"] = 1
+max_epochs = args["max_epochs"]
+print("\n\n")
+print("This is max_epochs",args["max_epochs"])
 # Setting the trainer specific arguments
 trainer_args = {
     "logger": tboard,
+    "max_epochs": max_epochs,
 }
 
 
