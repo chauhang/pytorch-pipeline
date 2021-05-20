@@ -1,0 +1,27 @@
+name: Training
+description: |
+  Pytorch training 
+
+inputs:
+  - {name: summary_url}
+
+outputs:
+  - {name: tensorboard_root}
+  - {name: checkpoint_dir}
+  - {name: MLPipeline UI Metadata}
+  
+  
+implementation:
+  container:
+    image: jagadeeshj/pytorch_pipeline:v1a.49
+    command: ["python3", "pytorch_pipeline/examples/mnist/mnist_pytorch.py"]
+    args:
+    - --tensorboard_root
+    - {outputPath: tensorboard_root}
+    - --checkpoint_dir
+    - {outputPath: checkpoint_dir}
+    - --save_path
+    - {outputPath: MLPipeline UI Metadata}
+    - --summary_url
+    - {inputValue: summary_url}
+    
