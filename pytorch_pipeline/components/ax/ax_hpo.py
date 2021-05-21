@@ -63,14 +63,15 @@ class AxOptimization:
 
         best_parameters, metrics = ax_client.get_best_parameters()
         trials_df = ax_client.get_trials_data_frame()
-        trials_df.to_csv("summary.csv")
+        trials_df.to_csv("summary.csv",header=None, index=None)
         columns = trials_df.columns
         self.columns = columns
         print("This is sum url", module_file_args["summary_url"])
         parse_obj = urlparse(module_file_args["summary_url"], allow_fragments=False)
         bucket_name = parse_obj.netloc
-        print(bucket_name)
+        print("\n\nThis is bucket name",bucket_name)
         folder_name = str(parse_obj.path).lstrip("/")
+        print("\n\n This is folder name", folder_name)
 
         # TODO:
         endpoint = "minio-service.kubeflow:9000"
