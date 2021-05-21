@@ -14,7 +14,7 @@ outputs:
   - {name: MLPipeline Metrics}
 implementation:
   container:
-    image: jagadeeshj/pytorch_pipeline:14-05-2021-17-22-22.436610
+    image: jagadeeshj/pytorch_pipeline:21052021_v1.0
     command: ["python3", "pytorch_pipeline/examples/bert/agnews_classification_pytorch.py"]
     args:
       - --dataset_path
