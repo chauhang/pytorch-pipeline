@@ -8,8 +8,6 @@ from kfp import compiler
 
 
 yaml_folder_path = "examples/mnist/yaml"
-log_bucket = "mlpipeline"
-ax_path = f"ax/summary/{dsl.RUN_ID_PLACEHOLDER}"
 
 prepare_tensorboard_op = load_component_from_file(f"{yaml_folder_path}/tensorboard/component.yaml")
 train_op = components.load_component_from_file(f"{yaml_folder_path}/train/component.yaml")

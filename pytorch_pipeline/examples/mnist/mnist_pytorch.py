@@ -112,7 +112,7 @@ columns = ax_hpo.columns
 
 table_dict = {
     'type': 'table',
-    'storage': 'minio',
+    'storage': 'inline',
     'format': 'csv',
     'header': [x for x in columns],
     'source': args["summary_url"]
