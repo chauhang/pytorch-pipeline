@@ -115,7 +115,7 @@ table_dict = {
     'storage': 'inline',
     'format': 'csv',
     'header': [x for x in columns],
-    'source': args["summary_url"]
+    'source': os.path.join(args["summary_url"],"summary.csv")
       }
 
 visualization = Visualization(
