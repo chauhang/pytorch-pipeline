@@ -12,7 +12,7 @@ outputs:
 
 implementation:
   container:
-    image: jagadeeshj/pytorch_pipeline:14-05-2021-17-22-22.436610
+    image: jagadeeshj/pytorch_pipeline:21052021_v1.0
     command: ["python3", "pytorch_pipeline/components/minio/upload_to_minio.py"]
     args:
       - --bucket_name
