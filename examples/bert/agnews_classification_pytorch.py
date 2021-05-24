@@ -11,7 +11,6 @@ from pytorch_lightning.callbacks import (
 )
 from pytorch_pipeline.components.visualization.component import Visualization
 
-
 # Argument parser for user defined paths
 parser = ArgumentParser()
 
@@ -39,8 +38,15 @@ parser.add_argument(
 parser.add_argument(
     "--model_name",
     type=str,
-    default="resnet.pth",
-    help="Name of the model to be saved as (default: resnet.pth)",
+    default="bert.pth",
+    help="Name of the model to be saved as (default: bert.pth)",
+)
+
+parser.add_argument(
+    "--num_samples",
+    type=int,
+    default=1000,
+    help="Number of samples to use for training",
 )
 
 parser.add_argument(
@@ -60,14 +66,6 @@ parser.add_argument(
     type=str,
     help="Minio url to generate confusion matrix",
 )
-
-parser.add_argument(
-    "--pod_template_spec",
-    type=str,
-    default=None,
-    help="Pod template spec",
-)
-
 
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
@@ -107,13 +105,16 @@ if "profiler" in args and args["profiler"] != "":
     trainer_args["profiler"] = args["profiler"]
 
 # Setting the datamodule specific arguments
-data_module_args = {"train_glob": args["dataset_path"]}
+data_module_args = {
+    "train_glob": args["dataset_path"],
+    "num_samples": args["num_samples"]
+}
 
 
 # Initiating the training process
 trainer = Trainer(
-    module_file="cifar10_train.py",
-    data_module_file="cifar10_datamodule.py",
+    module_file="bert_train.py",
+    data_module_file="bert_datamodule.py",
     module_file_args=parser,
     data_module_args=data_module_args,
     trainer_args=trainer_args,
@@ -123,29 +124,24 @@ trainer = Trainer(
 # Mar file generation
 
 mar_config = {
-    "MODEL_NAME": "cifar10_test",
-    "MODEL_FILE": "pytorch_pipeline/examples/cifar10/cifar10_train.py",
-    "HANDLER": "image_classifier",
+    "MODEL_NAME": "bert_test",
+    "MODEL_FILE": "examples/bert/bert_train.py",
+    "HANDLER": "examples/bert/bert_handler.py",
     "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
     "VERSION": "1",
     "EXPORT_PATH": args["checkpoint_dir"],
-    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties",
+    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/bert/config.properties",
+    "EXTRA_FILES": "examples/bert/bert-base-uncased-vocab.txt,examples/bert/index_to_name.json,examples/bert/wrapper.py",
 }
 
 
 MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
 
 classes = [
-    "airplane",
-    "automobile",
-    "bird",
-    "cat",
-    "deer",
-    "dog",
-    "frog",
-    "horse",
-    "ship",
-    "truck",
+    "World",
+    "Sports",
+    "Business",
+    "Sci/Tech",
 ]
 
 model = trainer.ptl_trainer.model
@@ -155,7 +151,6 @@ target_index_list = list(set(model.target))
 class_list = []
 for index in target_index_list:
     class_list.append(classes[index])
-
 
 confusion_matrix_dict = {
     "actuals": model.target,
@@ -167,6 +162,7 @@ confusion_matrix_dict = {
 test_accuracy = round(float(model.test_acc.compute()), 2)
 
 print("Model test accuracy: ", test_accuracy)
+
 
 visualization_arguments = {
     "input": {
@@ -188,11 +184,8 @@ print("Visualization Arguments: ", markdown_dict)
 
 visualization = Visualization(
     test_accuracy=test_accuracy,
-    confusion_matrix_dict=confusion_matrix_dict,
+    # confusion_matrix_dict=confusion_matrix_dict,
     mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
     mlpipeline_metrics=args["mlpipeline_metrics"],
     markdown=markdown_dict,
 )
-
-checpoint_dir_contents = os.listdir(args['checkpoint_dir'])
-print(f"Checkpoint Directory Contents: {checpoint_dir_contents}")
