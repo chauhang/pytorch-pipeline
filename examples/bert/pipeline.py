@@ -19,7 +19,7 @@ train_op = components.load_component_from_file(f"{yaml_folder_path}/train/compon
 deploy_op = load_component_from_file(f"{yaml_common_folder}/deploy/component.yaml")
 
 
-minio_op = components.load_component_from_file(f"{yaml_folder_path}/minio/component.yaml")
+minio_op = components.load_component_from_file(f"{yaml_common_folder}/minio/component.yaml")
 
 
 @dsl.pipeline(name="Training pipeline", description="Sample training job test")
