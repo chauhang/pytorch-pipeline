@@ -13,6 +13,7 @@ class Visualization(BaseComponent):
         confusion_matrix_dict=None,
         test_accuracy=None,
         markdown=None,
+        table=None,
     ):
         super(BaseComponent, self).__init__()
 
@@ -34,4 +35,5 @@ class Visualization(BaseComponent):
             confusion_matrix_dict=confusion_matrix_dict,
             test_accuracy=test_accuracy,
             markdown=markdown,
+            table=table,
         )

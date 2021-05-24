@@ -48,13 +48,14 @@ class Trainer(BaseComponent):
 
             print(model_class, data_module_class)
 
-            self.ptl_trainer = Executor().Do(
+            ptl_trainer = Executor().Do(
                 model_class=model_class,
                 data_module_class=data_module_class,
                 data_module_args=data_module_args,
                 module_file_args=module_file_args,
                 trainer_args=trainer_args,
             )
+            self.ptl_trainer = ptl_trainer
         #
         # elif run_fn:
         #     GenericExecutor().Do()
