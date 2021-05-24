@@ -8,12 +8,13 @@ from kfp import compiler
 
 
 yaml_folder_path = "examples/cifar10/yaml"
+yaml_common_folder = "examples/common"
 
-prepare_tensorboard_op = load_component_from_file(f"{yaml_folder_path}/tensorboard/component.yaml")
+prepare_tensorboard_op = load_component_from_file(f"{yaml_common_folder}/tensorboard/component.yaml")
 prep_op = components.load_component_from_file(f"{yaml_folder_path}/pre_process/component.yaml")
 train_op = components.load_component_from_file(f"{yaml_folder_path}/train/component.yaml")
-deploy_op = load_component_from_file(f"{yaml_folder_path}/deploy/component.yaml")
-pred_op = components.load_component_from_file(f"{yaml_folder_path}/prediction/component.yaml")
+deploy_op = load_component_from_file(f"{yaml_common_folder}/deploy/component.yaml")
+pred_op = components.load_component_from_file(f"{yaml_common_folder}/prediction/component.yaml")
 
 
 minio_op = components.load_component_from_file(f"{yaml_folder_path}/minio/component.yaml")
