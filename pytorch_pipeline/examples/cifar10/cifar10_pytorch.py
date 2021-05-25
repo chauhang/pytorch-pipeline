@@ -45,13 +45,13 @@ parser.add_argument(
 parser.add_argument(
     "--mlpipeline_ui_metadata",
     type=str,
-    default="test2",
+    default="mlpipeline-ui-metadata.json",
     help="Path to write mlpipeline-ui-metadata.json",
 )
 
 parser.add_argument(
     "--mlpipeline_metrics",
-    default="test2",
+    default="mlpipeline-metrics.json",
     type=str,
     help="Path to write mlpipeline-metrics.json",
 )
