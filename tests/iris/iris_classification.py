@@ -1,7 +1,6 @@
 # pylint: disable=W0221
 # pylint: disable=W0613
 # pylint: disable=W0223
-import argparse
 from argparse import ArgumentParser
 
 import pytorch_lightning as pl
@@ -83,45 +82,3 @@ class IrisClassification(pl.LightningModule):
         _, y_hat = torch.max(logits, dim=1)
         self.test_acc(y_hat, y)
         self.log("test_acc", self.test_acc.compute())
-
-
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description="Iris Classification model")
-#
-#     parser.add_argument(
-#         "--max_epochs", type=int, default=100, help="number of epochs to run (default: 100)"
-#     )
-#     parser.add_argument(
-#         "--gpus", type=int, default=0, help="Number of gpus - by default runs on CPU"
-#     )
-#     parser.add_argument(
-#         "--save-model",
-#         type=bool,
-#         default=True,
-#         help="For Saving the current Model",
-#     )
-#     parser.add_argument(
-#         "--accelerator",
-#         type=lambda x: None if x == "None" else x,
-#         default=None,
-#         help="Accelerator - (default: None)",
-#     )
-#
-#     from iris_data_module import IrisDataModule
-#
-#     parser = IrisClassification.add_model_specific_args(parent_parser=parser)
-#     parser = IrisDataModule.add_model_specific_args(parent_parser=parser)
-#
-#     args = parser.parse_args()
-#     dict_args = vars(args)
-#
-#     dm = IrisDataModule(**dict_args)
-#     dm.prepare_data()
-#     dm.setup(stage="fit")
-#
-#     model = IrisClassification(**dict_args)
-#     trainer = pl.Trainer.from_argparse_args(args)
-#     trainer.fit(model, dm)
-#     trainer.test()
-#
-#     torch.save(model.state_dict(), "iris.pt")
