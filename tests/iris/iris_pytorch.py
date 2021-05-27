@@ -34,21 +34,20 @@ args = vars(parser.parse_args())
 
 
 if not args["max_epochs"]:
-    max_epochs = 50
+    max_epochs = 5
 else:
     max_epochs = args["max_epochs"]
 
 
-# Setting the trainer specific arguments
-trainer_args = {
-    "max_epochs": max_epochs,
-}
+args["max_epochs"] = max_epochs
+
+trainer_args = {}
 
 # Initiating the training process
 trainer = Trainer(
     module_file="iris_classification.py",
     data_module_file="iris_data_module.py",
-    module_file_args=parser,
+    module_file_args=args,
     data_module_args=None,
     trainer_args=trainer_args,
 )

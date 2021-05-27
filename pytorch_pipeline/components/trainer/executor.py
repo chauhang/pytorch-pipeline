@@ -49,9 +49,18 @@ class Executor(GenericExecutor):
             data_module.setup(stage="fit")
             model = model_class(**module_file_args if module_file_args else {})
 
+            if (not module_file_args) and (not trainer_args):
+                raise ValueError("Both module file args and trainer args cannot be empty")
+
+            if not isinstance(trainer_args, dict):
+                raise TypeError(f"trainer_args must be a dict")
+
             trainer_args.update(module_file_args)
             parser = Namespace(**trainer_args)
             trainer = pl.Trainer.from_argparse_args(parser)
+
+            trainer.fit(model, data_module)
+            trainer.test()
 
             if "checkpoint_dir" in module_file_args:
                 model_save_path = module_file_args["checkpoint_dir"]
@@ -67,4 +76,7 @@ class Executor(GenericExecutor):
             print("Saving model to {}".format(model_save_path))
             torch.save(model.state_dict(), model_save_path)
 
-        return trainer
+            return trainer
+        else:
+            raise NotImplementedError("Data module class is mandatory. "
+                                      "User defined training module is yet to be supported.")
