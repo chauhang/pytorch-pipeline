@@ -23,12 +23,12 @@ export full_image_name=$full_image_name
 
 
 ## build and push docker - to fetch the latest changes and install dependencies
-cd pytorch_pipeline
+# cd pytorch_pipeline
 
 docker build --no-cache -t $full_image_name .
 docker push $full_image_name
 
-cd ..
+# cd ..
 
 ## Update component.yaml files with the latest docker image name
 
