@@ -1,8 +1,3 @@
-# pylint: disable=R0913
-# pylint: disable=R0903
-# pylint: disable=E1003
-# pylint: disable=W0221
-
 """This module executues the training process and saves the model to checkpoint dir."""
 
 import os
