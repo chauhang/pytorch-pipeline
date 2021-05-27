@@ -12,7 +12,7 @@ outputs:
 - {name: MLPipeline UI Metadata}
 implementation:
   container:
-    image: alpine
+    image: public.ecr.aws/y1x1p2u5/alpine:latest
     command:
     - sh
     - -ex
