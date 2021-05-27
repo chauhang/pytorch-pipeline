@@ -9,17 +9,15 @@ import os
 from argparse import Namespace
 import pytorch_lightning as pl
 import torch
-from pytorch_pipeline.components.trainer.generic_executor import GenericExecutor
 
 
-class Executor(GenericExecutor):
-    """Initializes the model training. Inherits the GenericExecutor class.
+class Executor:
+    """Initializes the model training.
     This is called at the trainer Component to carry the training operation.
     """
 
     def __init__(self):
-        """Initializes the GenericExecutor class"""
-        super(GenericExecutor, self).__init__()
+        pass
 
     def Do(
         self,
@@ -78,5 +76,7 @@ class Executor(GenericExecutor):
 
             return trainer
         else:
-            raise NotImplementedError("Data module class is mandatory. "
-                                      "User defined training module is yet to be supported.")
+            raise NotImplementedError(
+                "Data module class is mandatory. "
+                "User defined training module is yet to be supported."
+            )

@@ -4,15 +4,13 @@
 
 """This module is the component of the pipeline for the complete training of the models.
 Calls the Executor for the PyTorch Lightning training to start."""
-import os
 import inspect
 import importlib
 from typing import Optional, Dict
-from pytorch_pipeline.components.base.base_component import BaseComponent
 from pytorch_pipeline.components.trainer.executor import Executor
 
 
-class Trainer(BaseComponent):
+class Trainer:
     """Initializes the Trainer class."""
 
     def __init__(
@@ -32,7 +30,6 @@ class Trainer(BaseComponent):
         :param module_file_args : The arguments of the model class.
         :param trainer_args : These arguments are specific to the pytorch lightning trainer.
         """
-        super(BaseComponent, self).__init__()
         if not module_file:
             raise ValueError(f"module_file cannot be {module_file}")
 
@@ -76,5 +73,7 @@ class Trainer(BaseComponent):
                 trainer_args=trainer_args,
             )
         else:
-            raise NotImplementedError("Module file and Datamodule file are mandatory. "
-                                      "Custom training methods are yet to be implemented")
+            raise NotImplementedError(
+                "Module file and Datamodule file are mandatory. "
+                "Custom training methods are yet to be implemented"
+            )
