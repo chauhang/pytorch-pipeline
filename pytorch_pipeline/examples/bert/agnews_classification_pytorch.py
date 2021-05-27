@@ -146,7 +146,7 @@ if trainer.ptl_trainer.global_rank == 0:
         "Sci/Tech",
     ]
 
-    model = trainer.ptl_trainer.model
+    # model = trainer.ptl_trainer.model
 
     target_index_list = list(set(model.target))
 
