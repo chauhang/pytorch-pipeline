@@ -45,12 +45,14 @@ parser.add_argument(
 
 parser.add_argument(
     "--mlpipeline_ui_metadata",
+    default="mlpipeline-ui-metadata.json",
     type=str,
     help="Path to write mlpipeline-ui-metadata.json",
 )
 
 parser.add_argument(
     "--mlpipeline_metrics",
+    default="mlpipeline-metrics.json",
     type=str,
     help="Path to write mlpipeline-metrics.json",
 )
@@ -58,6 +60,7 @@ parser.add_argument(
 parser.add_argument(
     "--confusion_matrix_url",
     type=str,
+    default=None,
     help="Minio url to generate confusion matrix",
 )
 
@@ -89,16 +92,12 @@ checkpoint_callback = ModelCheckpoint(
 )
 
 if not args["max_epochs"]:
-    max_epochs = 1
-else:
-    max_epochs = args["max_epochs"]
-
+    args["max_epochs"] = 1
 
 # Setting the trainer specific arguments
 trainer_args = {
     "logger": tboard,
     "checkpoint_callback": True,
-    "max_epochs": max_epochs,
     "callbacks": [lr_logger, early_stopping, checkpoint_callback],
 }
 
@@ -114,7 +113,7 @@ data_module_args = {"train_glob": args["dataset_path"]}
 trainer = Trainer(
     module_file="cifar10_train.py",
     data_module_file="cifar10_datamodule.py",
-    module_file_args=parser,
+    module_file_args=args,
     data_module_args=data_module_args,
     trainer_args=trainer_args,
 )
@@ -194,5 +193,5 @@ visualization = Visualization(
     markdown=markdown_dict,
 )
 
-checpoint_dir_contents = os.listdir(args['checkpoint_dir'])
+checpoint_dir_contents = os.listdir(args["checkpoint_dir"])
 print(f"Checkpoint Directory Contents: {checpoint_dir_contents}")

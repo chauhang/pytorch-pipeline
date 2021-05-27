@@ -42,6 +42,9 @@ class MarGeneration:
             "CONFIG_PROPERTIES",
         ]
 
+        if not self.mar_config:
+            raise Exception(f"Mar config cannot be empty. Mandatory arguments are {mandatory_args}")
+
         missing_list = []
         for key in mandatory_args:
             if key not in self.mar_config:
@@ -49,7 +52,7 @@ class MarGeneration:
 
         if missing_list:
             raise Exception(
-                "Following Mandatory keys are missing in the config file {} ".format(missing_list)
+                "Following Mandatory keys are missing in the config file {}".format(missing_list)
             )
 
     def download_config_properties(self, url):

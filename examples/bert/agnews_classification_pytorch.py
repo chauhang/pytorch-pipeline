@@ -87,16 +87,13 @@ checkpoint_callback = ModelCheckpoint(
 )
 
 if not args["max_epochs"]:
-    max_epochs = 1
-else:
-    max_epochs = args["max_epochs"]
+    args["max_epochs"] = 1
 
 
 # Setting the trainer specific arguments
 trainer_args = {
     "logger": tboard,
     "checkpoint_callback": True,
-    "max_epochs": max_epochs,
     "callbacks": [lr_logger, early_stopping, checkpoint_callback],
 }
 
@@ -105,17 +102,14 @@ if "profiler" in args and args["profiler"] != "":
     trainer_args["profiler"] = args["profiler"]
 
 # Setting the datamodule specific arguments
-data_module_args = {
-    "train_glob": args["dataset_path"],
-    "num_samples": args["num_samples"]
-}
+data_module_args = {"train_glob": args["dataset_path"], "num_samples": args["num_samples"]}
 
 
 # Initiating the training process
 trainer = Trainer(
     module_file="bert_train.py",
     data_module_file="bert_datamodule.py",
-    module_file_args=parser,
+    module_file_args=args,
     data_module_args=data_module_args,
     trainer_args=trainer_args,
 )
