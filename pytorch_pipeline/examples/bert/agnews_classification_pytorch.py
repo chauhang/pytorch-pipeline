@@ -120,72 +120,74 @@ trainer = Trainer(
     trainer_args=trainer_args,
 )
 
+model = trainer.ptl_trainer.get_model()
 
-# Mar file generation
+if trainer.ptl_trainer.global_rank == 0:
+    # Mar file generation
 
-mar_config = {
-    "MODEL_NAME": "bert_test",
-    "MODEL_FILE": "pytorch_pipeline/examples/bert/bert_train.py",
-    "HANDLER": "pytorch_pipeline/examples/bert/bert_handler.py",
-    "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
-    "VERSION": "1",
-    "EXPORT_PATH": args["checkpoint_dir"],
-    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/bert/config.properties",
-    "EXTRA_FILES": "pytorch_pipeline/examples/bert/bert-base-uncased-vocab.txt,pytorch_pipeline/examples/bert/index_to_name.json,pytorch_pipeline/examples/bert/wrapper.py",
-}
-
-
-MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
-
-classes = [
-    "World",
-    "Sports",
-    "Business",
-    "Sci/Tech",
-]
-
-model = trainer.ptl_trainer.model
-
-target_index_list = list(set(model.target))
-
-class_list = []
-for index in target_index_list:
-    class_list.append(classes[index])
-
-confusion_matrix_dict = {
-    "actuals": model.target,
-    "preds": model.preds,
-    "classes": class_list,
-    "url": args["confusion_matrix_url"],
-}
-
-test_accuracy = round(float(model.test_acc.compute()), 2)
-
-print("Model test accuracy: ", test_accuracy)
+    mar_config = {
+        "MODEL_NAME": "bert_test",
+        "MODEL_FILE": "pytorch_pipeline/examples/bert/bert_train.py",
+        "HANDLER": "pytorch_pipeline/examples/bert/bert_handler.py",
+        "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
+        "VERSION": "1",
+        "EXPORT_PATH": args["checkpoint_dir"],
+        "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/bert/config.properties",
+        "EXTRA_FILES": "pytorch_pipeline/examples/bert/bert-base-uncased-vocab.txt,pytorch_pipeline/examples/bert/index_to_name.json,pytorch_pipeline/examples/bert/wrapper.py",
+    }
 
 
-visualization_arguments = {
-    "input": {
-        "tensorboard_root": args["tensorboard_root"],
-        "checkpoint_dir": args["checkpoint_dir"],
-        "dataset_path": args["dataset_path"],
-        "model_name": args["model_name"],
-        "confusion_matrix_url": args["confusion_matrix_url"],
-    },
-    "output": {
-        "mlpipeline_ui_metadata": args["mlpipeline_ui_metadata"],
-        "mlpipeline_metrics": args["mlpipeline_metrics"],
-    },
-}
+    MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
 
-markdown_dict = {"storage": "inline", "source": visualization_arguments}
+    classes = [
+        "World",
+        "Sports",
+        "Business",
+        "Sci/Tech",
+    ]
 
-print("Visualization Arguments: ", markdown_dict)
+    model = trainer.ptl_trainer.model
 
-visualization = Visualization(
-    test_accuracy=test_accuracy,
-    # confusion_matrix_dict=confusion_matrix_dict,
-    mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
-    mlpipeline_metrics=args["mlpipeline_metrics"],
-    markdown=markdown_dict,
-)
+    target_index_list = list(set(model.target))
+
+    class_list = []
+    for index in target_index_list:
+        class_list.append(classes[index])
+
+    confusion_matrix_dict = {
+        "actuals": model.target,
+        "preds": model.preds,
+        "classes": class_list,
+        "url": args["confusion_matrix_url"],
+    }
+
+    test_accuracy = round(float(model.test_acc.compute()), 2)
+
+    print("Model test accuracy: ", test_accuracy)
+
+
+    visualization_arguments = {
+        "input": {
+            "tensorboard_root": args["tensorboard_root"],
+            "checkpoint_dir": args["checkpoint_dir"],
+            "dataset_path": args["dataset_path"],
+            "model_name": args["model_name"],
+            "confusion_matrix_url": args["confusion_matrix_url"],
+        },
+        "output": {
+            "mlpipeline_ui_metadata": args["mlpipeline_ui_metadata"],
+            "mlpipeline_metrics": args["mlpipeline_metrics"],
+        },
+    }
+
+    markdown_dict = {"storage": "inline", "source": visualization_arguments}
+
+    print("Visualization Arguments: ", markdown_dict)
+
+    visualization = Visualization(
+        test_accuracy=test_accuracy,
+        # confusion_matrix_dict=confusion_matrix_dict,
+        mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+        mlpipeline_metrics=args["mlpipeline_metrics"],
+        markdown=markdown_dict,
+    )
