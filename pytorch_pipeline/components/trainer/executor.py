@@ -4,24 +4,18 @@ import os
 from argparse import Namespace
 import pytorch_lightning as pl
 import torch
+from pytorch_pipeline.components.trainer.generic_executor import GenericExecutor
 
 
-class Executor:
+class Executor(GenericExecutor):
     """Initializes the model training.
     This is called at the trainer Component to carry the training operation.
     """
 
     def __init__(self):
-        pass
+        super(Executor, self).__init__()
 
-    def Do(
-        self,
-        model_class,
-        data_module_class=None,
-        data_module_args=None,
-        module_file_args=None,
-        trainer_args=None,
-    ):
+    def Do(self, input_dict: dict, output_dict: dict, exec_properties: dict):
         """
         This function of the Executor invokes the PyTorch Lightning training loop.
         In this step the data module and model is set up and then the model is fitted and tested.

@@ -4,9 +4,11 @@ import inspect
 import importlib
 from typing import Optional, Dict
 from pytorch_pipeline.components.trainer.executor import Executor
+from pytorch_pipeline.components.base.base_component import BaseComponent
+from pytorch_pipeline.types import standard_component_specs
 
 
-class Trainer:
+class Trainer(BaseComponent):
     """Initializes the Trainer class."""
 
     def __init__(
@@ -26,11 +28,28 @@ class Trainer:
         :param module_file_args : The arguments of the model class.
         :param trainer_args : These arguments are specific to the pytorch lightning trainer.
         """
-        if not module_file:
-            raise ValueError(f"module_file cannot be {module_file}")
 
-        if not data_module_file:
-            raise ValueError(f"data_module_file cannot be {data_module_file}")
+        super(Trainer, self).__init__()
+        input_dict = {
+            standard_component_specs.TRAINER_MODULE_CLASS: module_file,
+            standard_component_specs.TRAINER_DATA_MODULE_CLASS: data_module_file,
+        }
+
+        output_dict = {}
+
+        exec_properties = {
+            standard_component_specs.TRAINER_DATA_MODULE_ARGS: data_module_args,
+            standard_component_specs.TRAINER_MODULE_ARGS: module_file_args,
+            standard_component_specs.PTL_TRAINER_ARGS: trainer_args,
+        }
+
+        spec = standard_component_specs.TrainerSpec()
+        self._validate_spec(
+            spec=spec,
+            input_dict=input_dict,
+            output_dict=output_dict,
+            exec_properties=exec_properties,
+        )
 
         if module_file and data_module_file:
             # Both module file and data module file are present
@@ -61,13 +80,11 @@ class Trainer:
             if not data_module_class:
                 raise ValueError(f"Unable to load data_module_file - {data_module_file}")
 
-            self.ptl_trainer = Executor().Do(
-                model_class=model_class,
-                data_module_class=data_module_class,
-                data_module_args=data_module_args,
-                module_file_args=module_file_args,
-                trainer_args=trainer_args,
-            )
+            # self.ptl_trainer = Executor().Do(
+            #     input_dict=input_dict,
+            #     output_dict=output_dict,
+            #     exec_properties=exec_properties
+            # )
         else:
             raise NotImplementedError(
                 "Module file and Datamodule file are mandatory. "

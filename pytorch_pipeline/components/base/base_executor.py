@@ -7,5 +7,5 @@ class BaseExecutor(with_metaclass(abc.ABCMeta, object)):
         pass
 
     @abc.abstractmethod
-    def Do(self, model_class, data_module_class=None, data_module_args=None, module_file_args=None):
+    def Do(self, input_dict: dict, output_dict: dict, exec_properties: dict):
         pass
