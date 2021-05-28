@@ -104,6 +104,8 @@ if "profiler" in args and args["profiler"] != "":
 # Setting the datamodule specific arguments
 data_module_args = {"train_glob": args["dataset_path"], "num_samples": args["num_samples"]}
 
+# Setting tensorboard folder
+Path(tensorboard_root).mkdir(parents=True, exist_ok=True)
 
 # Initiating the training process
 trainer = Trainer(
