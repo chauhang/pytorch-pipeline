@@ -9,7 +9,7 @@ outputs:
 implementation:
   container:
     image: public.ecr.aws/y1x1p2u5/pytorch_pipeline:21052021_v1.0
-    command: ["python3", "pytorch_pipeline/examples/cifar10/cifar10_pre_process.py"] 
+    command: ["python3", "examples/cifar10/cifar10_pre_process.py"] 
     args:
     - --output_data
     - {outputPath: output_data}
