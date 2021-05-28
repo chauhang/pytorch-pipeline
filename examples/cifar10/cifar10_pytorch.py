@@ -124,19 +124,19 @@ trainer = Trainer(
 
 # Mar file generation
 
-#mar_config = {
-#    "MODEL_NAME": "cifar10_test",
-#    "MODEL_FILE": "examples/cifar10/cifar10_train.py",
-#    "HANDLER": "image_classifier",
-#    "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
-#    "VERSION": "1",
-#    "EXPORT_PATH": args["checkpoint_dir"],
-#    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties",
-#}
+mar_config = {
+    "MODEL_NAME": "cifar10_test",
+    "MODEL_FILE": "examples/cifar10/cifar10_train.py",
+    "HANDLER": "image_classifier",
+    "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
+    "VERSION": "1",
+    "EXPORT_PATH": args["checkpoint_dir"],
+    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties",
+}
 
 
 
-#MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
+MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
 
 classes = [
     "airplane",
