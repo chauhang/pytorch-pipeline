@@ -3,6 +3,7 @@ import os
 from pytorch_pipeline.components.trainer.component import Trainer
 from pytorch_pipeline.components.mar.mar_generation import MarGeneration
 from argparse import ArgumentParser
+from pathlib import Path
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import (
     EarlyStopping,
@@ -104,6 +105,8 @@ if "profiler" in args and args["profiler"] != "":
 # Setting the datamodule specific arguments
 data_module_args = {"train_glob": args["dataset_path"], "num_samples": args["num_samples"]}
 
+# Setting tensorboard folder
+Path(args["tensorboard_root"]).mkdir(parents=True, exist_ok=True)
 
 # Initiating the training process
 trainer = Trainer(
