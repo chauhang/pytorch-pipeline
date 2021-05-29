@@ -54,37 +54,9 @@ class Trainer(BaseComponent):
         if module_file and data_module_file:
             # Both module file and data module file are present
 
-            model_class = None
-            data_module_class = None
-
-            class_module = importlib.import_module(module_file.split(".")[0])
-            data_module = importlib.import_module(data_module_file.split(".")[0])
-
-            for cls in inspect.getmembers(
-                class_module,
-                lambda member: inspect.isclass(member)
-                and member.__module__ == class_module.__name__,
-            ):
-                model_class = cls[1]
-
-            if not model_class:
-                raise ValueError(f"Unable to load module_file - {module_file}")
-
-            for cls in inspect.getmembers(
-                data_module,
-                lambda member: inspect.isclass(member)
-                and member.__module__ == data_module.__name__,
-            ):
-                data_module_class = cls[1]
-
-            if not data_module_class:
-                raise ValueError(f"Unable to load data_module_file - {data_module_file}")
-
-            # self.ptl_trainer = Executor().Do(
-            #     input_dict=input_dict,
-            #     output_dict=output_dict,
-            #     exec_properties=exec_properties
-            # )
+            self.ptl_trainer = Executor().Do(
+                input_dict=input_dict, output_dict=output_dict, exec_properties=exec_properties
+            )
         else:
             raise NotImplementedError(
                 "Module file and Datamodule file are mandatory. "

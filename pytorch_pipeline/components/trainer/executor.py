@@ -29,7 +29,23 @@ class Executor(GenericExecutor):
 
         :return : returns the trainer object of PyTorch Lightning
         """
+        self._log_startup(
+            input_dict=input_dict, output_dict=output_dict, exec_properties=exec_properties
+        )
 
+        (
+            module_file,
+            data_module_file,
+            trainer_args,
+            module_file_args,
+            data_module_args,
+        ) = self._GetFnArgs(
+            input_dict=input_dict, output_dict=output_dict, execution_properties=exec_properties
+        )
+
+        model_class, data_module_class = self.derive_model_and_data_module_class(
+            module_file=module_file, data_module_file=data_module_file
+        )
         if data_module_class:
             data_module = data_module_class(**data_module_args if data_module_args else {})
             data_module.prepare_data()
