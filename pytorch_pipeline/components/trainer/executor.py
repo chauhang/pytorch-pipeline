@@ -56,7 +56,7 @@ class Executor(GenericExecutor):
                 raise ValueError("Both module file args and trainer args cannot be empty")
 
             if not isinstance(trainer_args, dict):
-                raise TypeError(f"trainer_args must be a dict")
+                raise TypeError("trainer_args must be a dict")
 
             trainer_args.update(module_file_args)
             parser = Namespace(**trainer_args)

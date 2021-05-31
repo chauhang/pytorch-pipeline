@@ -31,8 +31,8 @@ class Trainer(BaseComponent):
 
         super(Trainer, self).__init__()
         input_dict = {
-            standard_component_specs.TRAINER_MODULE_CLASS: module_file,
-            standard_component_specs.TRAINER_DATA_MODULE_CLASS: data_module_file,
+            standard_component_specs.TRAINER_MODULE_FILE: module_file,
+            standard_component_specs.TRAINER_DATA_MODULE_FILE: data_module_file,
         }
 
         output_dict = {}

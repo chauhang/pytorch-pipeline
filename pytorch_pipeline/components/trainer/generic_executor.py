@@ -10,8 +10,8 @@ class GenericExecutor(BaseExecutor):
         pass
 
     def _GetFnArgs(self, input_dict: dict, output_dict: dict, execution_properties: dict):
-        module_file = input_dict.get(standard_component_specs.TRAINER_MODULE_CLASS)
-        data_module_file = input_dict.get(standard_component_specs.TRAINER_DATA_MODULE_CLASS)
+        module_file = input_dict.get(standard_component_specs.TRAINER_MODULE_FILE)
+        data_module_file = input_dict.get(standard_component_specs.TRAINER_DATA_MODULE_FILE)
         trainer_args = execution_properties.get(standard_component_specs.PTL_TRAINER_ARGS)
         module_file_args = execution_properties.get(standard_component_specs.TRAINER_MODULE_ARGS)
         data_module_args = execution_properties.get(

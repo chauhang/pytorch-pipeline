@@ -1,5 +1,5 @@
-TRAINER_MODULE_CLASS = "model_class"
-TRAINER_DATA_MODULE_CLASS = "data_module_class"
+TRAINER_MODULE_FILE = "module_file"
+TRAINER_DATA_MODULE_FILE = "data_module_file"
 TRAINER_DATA_MODULE_ARGS = "data_module_args"
 TRAINER_MODULE_ARGS = "module_file_args"
 PTL_TRAINER_ARGS = "trainer_args"
@@ -13,8 +13,8 @@ class Parameters:
 
 class TrainerSpec:
     INPUT_DICT = {
-        TRAINER_MODULE_CLASS: Parameters(type=str),
-        TRAINER_DATA_MODULE_CLASS: Parameters(type=str),
+        TRAINER_MODULE_FILE: Parameters(type=str),
+        TRAINER_DATA_MODULE_FILE: Parameters(type=str),
     }
 
     OUTPUT_DICT = {}

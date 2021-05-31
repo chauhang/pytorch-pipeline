@@ -27,6 +27,7 @@ MANDATORY_ARGS = [
     "module_file",
     "data_module_file",
 ]
+OPTIONAL_ARGS = ["module_file_args", "data_module_args", "trainer_args"]
 
 DEFAULT_MODEL_NAME = "model_state_dict.pth"
 DEFAULT_SAVE_PATH = f"/tmp/{DEFAULT_MODEL_NAME}"
@@ -44,31 +45,54 @@ def invoke_training(trainer_params):
 
 
 @pytest.mark.parametrize("mandatory_key", MANDATORY_ARGS)
-def test_mandatory_parameters_missing(mandatory_key):
-    mandatory_trainer_dict = deepcopy(trainer_params)
-    mandatory_trainer_dict[mandatory_key] = None
-    expected_exception_msg = f"{mandatory_key} cannot be None"
+def test_mandatory_keys_type_check(mandatory_key):
+    trainer_dict = deepcopy(trainer_params)
+    test_input = ["input_path"]
+    trainer_dict[mandatory_key] = test_input
+    expected_exception_msg = (
+        f"{mandatory_key} must be of type <class 'str'> but received as {type(test_input)}"
+    )
+    with pytest.raises(TypeError, match=expected_exception_msg):
+        invoke_training(trainer_params=trainer_dict)
+
+
+@pytest.mark.parametrize("optional_key", OPTIONAL_ARGS)
+def test_optional_keys_type_check(optional_key):
+    trainer_dict = deepcopy(trainer_params)
+    test_input = "test_input"
+    trainer_dict[optional_key] = test_input
+    expected_exception_msg = (
+        f"{optional_key} must be of type <class 'dict'> but received as {type(test_input)}"
+    )
+    with pytest.raises(TypeError, match=expected_exception_msg):
+        invoke_training(trainer_params=trainer_dict)
+
+
+@pytest.mark.parametrize("input_key", MANDATORY_ARGS + ["module_file_args"])
+def test_mandatory_params(input_key):
+    trainer_dict = deepcopy(trainer_params)
+    trainer_dict[input_key] = None
+    expected_exception_msg = (
+        f"{input_key} is not optional. Received value: {trainer_dict[input_key]}"
+    )
     with pytest.raises(ValueError, match=expected_exception_msg):
-        invoke_training(trainer_params=mandatory_trainer_dict)
+        invoke_training(trainer_params=trainer_dict)
 
 
-@pytest.mark.parametrize("key", ["module_file", "data_module_file"])
-def test_invalid_module_file(key):
-    invalid_module_dict = deepcopy(trainer_params)
-    invalid_module_dict[key] = "iris.py"
-    expected_exception_msg = f"Unable to load {key} - iris.py"
-    with pytest.raises(ValueError, match=expected_exception_msg):
-        invoke_training(trainer_params=invalid_module_dict)
+def test_data_module_args_optional():
+    trainer_dict = deepcopy(trainer_params)
+    trainer_dict["data_module_args"] = None
+    invoke_training(trainer_params=trainer_dict)
+    assert os.path.exists(DEFAULT_SAVE_PATH)
+    os.remove(DEFAULT_SAVE_PATH)
 
 
-def test_module_file_and_trainer_args_empty():
-    empty_args_dict = deepcopy(trainer_params)
-    empty_args_dict["module_file_args"] = None
-    empty_args_dict["trainer_args"] = None
-
-    expected_exception_msg = "Both module file args and trainer args cannot be empty"
-    with pytest.raises(ValueError, match=expected_exception_msg):
-        invoke_training(trainer_params=empty_args_dict)
+def test_trainer_args_none():
+    trainer_dict = deepcopy(trainer_params)
+    trainer_dict["trainer_args"] = None
+    expected_exception_msg = r"trainer_args must be a dict"
+    with pytest.raises(TypeError, match=expected_exception_msg):
+        invoke_training(trainer_params=trainer_dict)
 
 
 def test_training_success():
@@ -106,6 +130,7 @@ def test_training_success_with_empty_trainer_args():
     shutil.rmtree(tmp_dir)
 
 
+#
 def test_training_success_with_empty_data_module_args():
     tmp_dir = tempfile.mkdtemp()
     tmp_trainer_parms = deepcopy(trainer_params)
@@ -115,10 +140,3 @@ def test_training_success_with_empty_data_module_args():
 
     assert DEFAULT_MODEL_NAME in os.listdir(tmp_dir)
     shutil.rmtree(tmp_dir)
-
-
-def test_empty_args_type_error():
-    empty_args_dict = deepcopy(trainer_params)
-    empty_args_dict["trainer_args"] = None
-    with pytest.raises(TypeError, match="trainer_args must be a dict"):
-        invoke_training(trainer_params=empty_args_dict)
