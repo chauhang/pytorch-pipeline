@@ -91,6 +91,8 @@ if not args["max_epochs"]:
 else:
     max_epochs = args["max_epochs"]
 
+if args["accelerator"] and args["accelerator"] == "None":
+    args["accelerator"] = None
 
 # Setting the trainer specific arguments
 trainer_args = {
@@ -105,10 +107,7 @@ if "profiler" in args and args["profiler"] != "":
     trainer_args["profiler"] = args["profiler"]
 
 # Setting the datamodule specific arguments
-data_module_args = {
-    "train_glob": args["dataset_path"],
-    "num_samples": args["num_samples"]
-}
+data_module_args = {"train_glob": args["dataset_path"], "num_samples": args["num_samples"]}
 
 
 # Initiating the training process
@@ -135,7 +134,6 @@ if trainer.ptl_trainer.global_rank == 0:
         "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/bert/config.properties",
         "EXTRA_FILES": "pytorch_pipeline/examples/bert/bert-base-uncased-vocab.txt,pytorch_pipeline/examples/bert/index_to_name.json,pytorch_pipeline/examples/bert/wrapper.py",
     }
-
 
     MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
 
@@ -164,7 +162,6 @@ if trainer.ptl_trainer.global_rank == 0:
     test_accuracy = round(float(model.test_acc.compute()), 2)
 
     print("Model test accuracy: ", test_accuracy)
-
 
     visualization_arguments = {
         "input": {

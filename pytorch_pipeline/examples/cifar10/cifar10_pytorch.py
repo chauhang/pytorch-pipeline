@@ -92,6 +92,10 @@ if not args["max_epochs"]:
 else:
     max_epochs = args["max_epochs"]
 
+
+if args["accelerator"] and args["accelerator"] == "None":
+    args["accelerator"] = None
+
 # Setting the trainer specific arguments
 trainer_args = {
     "logger": tboard,
@@ -191,5 +195,5 @@ if trainer.ptl_trainer.global_rank == 0:
         markdown=markdown_dict,
     )
 
-    checpoint_dir_contents = os.listdir(args['checkpoint_dir'])
+    checpoint_dir_contents = os.listdir(args["checkpoint_dir"])
     print(f"Checkpoint Directory Contents: {checpoint_dir_contents}")
