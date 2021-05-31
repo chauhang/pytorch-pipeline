@@ -1,4 +1,11 @@
-"""This module executues the training process and saves the model to checkpoint dir."""
+#!/usr/bin/env/python3
+# Copyright (c) Facebook, Inc. and its affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree.
+
+"""Training Executor class."""
 
 import os
 from argparse import Namespace
@@ -9,26 +16,28 @@ from pytorch_pipeline.types import standard_component_specs
 
 
 class Executor(GenericExecutor):
-    """Initializes the model training.
-    This is called at the trainer Component to carry the training operation.
-    """
+    """The Training Executor class."""
 
     def __init__(self):
         super(Executor, self).__init__()
 
     def Do(self, input_dict: dict, output_dict: dict, exec_properties: dict):
-        """
-        This function of the Executor invokes the PyTorch Lightning training loop.
-        In this step the data module and model is set up and then the model is fitted and tested.
-        At the end of the training, the model state_dict is saved in the given checkpoint directory.
+        """This function of the Executor invokes the PyTorch Lightning training
+        loop.
 
-        :param model_class : The name of modle class.
-        :param data_module_class : The name of the data module.
-        :param data_module_args : The arguments of the data module, viz num workers, train glob etc.
-        :param module_file_args : The arguments of the model class, viz lr , weight_decay, etc.
-        :param trainer_args : These arguments of the trainer includes max_epochs, checkpoints etc.
+        Args:
+            input_dict : The dictionary of inputs.Example : model file, data module file
+            output_dict :
+            exec_properties : A dict of execution properties including data_module_args,
+                             trainer_args, module_file_args
 
-        :return : returns the trainer object of PyTorch Lightning
+        Returns:
+            trainer : The object of PyTorch-Lightning Trainer.
+
+        Raises:
+            ValueError : If both of module_file_arfs or trainer_args are empty.
+            TypeError : If the type of trainer_args is not dict.
+            NotImplementedError : If mandatory args; module_file or data_module_file is empty.
         """
         self._log_startup(
             input_dict=input_dict, output_dict=output_dict, exec_properties=exec_properties
