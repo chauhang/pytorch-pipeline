@@ -151,5 +151,3 @@ def test_trainer_output():
     assert trainer.output_dict is not None
     assert trainer.output_dict["model_save_path"] == os.path.join(tmp_dir, DEFAULT_MODEL_NAME)
     assert isinstance(trainer.output_dict["ptl_trainer"], pytorch_lightning.trainer.trainer.Trainer)
-    print("*" * 1000)
-    print(type(trainer.output_dict["ptl_trainer"]))
