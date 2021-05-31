@@ -2,6 +2,7 @@ import pytorch_lightning as pl
 import os
 from pytorch_pipeline.components.trainer.component import Trainer
 from pytorch_pipeline.components.mar.mar_generation import MarGeneration
+from pathlib import Path
 from argparse import ArgumentParser
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import (
@@ -108,6 +109,8 @@ if "profiler" in args and args["profiler"] != "":
 # Setting the datamodule specific arguments
 data_module_args = {"train_glob": args["dataset_path"]}
 
+#Setting tensorboard folder
+Path(args["tensorboard_root"]).mkdir(parents=True, exist_ok=True)
 
 # Initiating the training process
 trainer = Trainer(
@@ -130,6 +133,7 @@ mar_config = {
     "EXPORT_PATH": args["checkpoint_dir"],
     "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties",
 }
+
 
 
 MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
