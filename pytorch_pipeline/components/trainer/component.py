@@ -54,9 +54,12 @@ class Trainer(BaseComponent):
         if module_file and data_module_file:
             # Both module file and data module file are present
 
-            self.ptl_trainer = Executor().Do(
+            Executor().Do(
                 input_dict=input_dict, output_dict=output_dict, exec_properties=exec_properties
             )
+
+            self.ptl_trainer = output_dict.get(standard_component_specs.PTL_TRAINER_OBJ, "None")
+            self.output_dict = output_dict
         else:
             raise NotImplementedError(
                 "Module file and Datamodule file are mandatory. "

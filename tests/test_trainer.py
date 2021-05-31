@@ -130,7 +130,6 @@ def test_training_success_with_empty_trainer_args():
     shutil.rmtree(tmp_dir)
 
 
-#
 def test_training_success_with_empty_data_module_args():
     tmp_dir = tempfile.mkdtemp()
     tmp_trainer_parms = deepcopy(trainer_params)
@@ -140,3 +139,17 @@ def test_training_success_with_empty_data_module_args():
 
     assert DEFAULT_MODEL_NAME in os.listdir(tmp_dir)
     shutil.rmtree(tmp_dir)
+
+
+def test_trainer_output():
+    tmp_dir = tempfile.mkdtemp()
+    tmp_trainer_parms = deepcopy(trainer_params)
+    tmp_trainer_parms["module_file_args"]["checkpoint_dir"] = tmp_dir
+    trainer = invoke_training(trainer_params=tmp_trainer_parms)
+
+    assert hasattr(trainer, "output_dict")
+    assert trainer.output_dict is not None
+    assert trainer.output_dict["model_save_path"] == os.path.join(tmp_dir, DEFAULT_MODEL_NAME)
+    assert isinstance(trainer.output_dict["ptl_trainer"], pytorch_lightning.trainer.trainer.Trainer)
+    print("*" * 1000)
+    print(type(trainer.output_dict["ptl_trainer"]))

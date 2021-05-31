@@ -5,6 +5,7 @@ from argparse import Namespace
 import pytorch_lightning as pl
 import torch
 from pytorch_pipeline.components.trainer.generic_executor import GenericExecutor
+from pytorch_pipeline.types import standard_component_specs
 
 
 class Executor(GenericExecutor):
@@ -79,7 +80,9 @@ class Executor(GenericExecutor):
             print("Saving model to {}".format(model_save_path))
             torch.save(model.state_dict(), model_save_path)
 
-            return trainer
+            output_dict[standard_component_specs.TRAINER_MODEL_SAVE_PATH] = model_save_path
+            output_dict[standard_component_specs.PTL_TRAINER_OBJ] = trainer
+
         else:
             raise NotImplementedError(
                 "Data module class is mandatory. "
