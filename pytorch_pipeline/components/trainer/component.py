@@ -1,27 +1,36 @@
+"""This module is the component of the pipeline for the complete training of the models.
+Calls the Executor for the PyTorch Lightning training to start."""
 import inspect
 import importlib
 from typing import Optional, Dict
-from pytorch_pipeline.components.base.base_component import BaseComponent
-from pytorch_pipeline.components.trainer.generic_executor import GenericExecutor
 from pytorch_pipeline.components.trainer.executor import Executor
 
 
-class Trainer(BaseComponent):
+class Trainer:
+    """Initializes the Trainer class."""
+
     def __init__(
         self,
         module_file: Optional = None,
         data_module_file: Optional = None,
-        trainer_fn: Optional = None,
-        run_fn: Optional = None,
         data_module_args: Optional[Dict] = None,
         module_file_args: Optional[Dict] = None,
         trainer_args: Optional[Dict] = None,
     ):
-        super(BaseComponent, self).__init__()
-        if [bool(module_file), bool(run_fn), bool(trainer_fn)].count(True) != 1:
-            raise ValueError(
-                "Exactly one of 'module_file', 'trainer_fn', or 'run_fn' must be " "supplied."
-            )
+        """
+        Initializes the PyTorch Lightning training process.
+
+        :param module_file : The module to inherit the model class for training.
+        :param data_module_file : The module from which the data module class is inherited.
+        :param data_module_args : The arguments of the data module.
+        :param module_file_args : The arguments of the model class.
+        :param trainer_args : These arguments are specific to the pytorch lightning trainer.
+        """
+        if not module_file:
+            raise ValueError(f"module_file cannot be {module_file}")
+
+        if not data_module_file:
+            raise ValueError(f"data_module_file cannot be {data_module_file}")
 
         if module_file and data_module_file:
             # Both module file and data module file are present
@@ -39,6 +48,9 @@ class Trainer(BaseComponent):
             ):
                 model_class = cls[1]
 
+            if not model_class:
+                raise ValueError(f"Unable to load module_file - {module_file}")
+
             for cls in inspect.getmembers(
                 data_module,
                 lambda member: inspect.isclass(member)
@@ -46,7 +58,8 @@ class Trainer(BaseComponent):
             ):
                 data_module_class = cls[1]
 
-            print(model_class, data_module_class)
+            if not data_module_class:
+                raise ValueError(f"Unable to load data_module_file - {data_module_file}")
 
             self.ptl_trainer = Executor().Do(
                 model_class=model_class,
@@ -55,8 +68,8 @@ class Trainer(BaseComponent):
                 module_file_args=module_file_args,
                 trainer_args=trainer_args,
             )
-        #
-        # elif run_fn:
-        #     GenericExecutor().Do()
-        # elif trainer_fn:
-        #     Executor().Do()
+        else:
+            raise NotImplementedError(
+                "Module file and Datamodule file are mandatory. "
+                "Custom training methods are yet to be implemented"
+            )
