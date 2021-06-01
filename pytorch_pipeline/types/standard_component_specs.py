@@ -19,6 +19,7 @@ PTL_TRAINER_OBJ = "ptl_trainer"
 
 MAR_GENERATION_CONFIG = "mar_config"
 MAR_GENERATION_SAVE_PATH = "mar_save_path"
+CONFIG_PROPERTIES_SAVE_PATH = "config_prop_save_path"
 
 
 class Parameters:  # pylint: disable=R0903

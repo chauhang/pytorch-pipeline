@@ -25,3 +25,4 @@ class MarGeneration(BaseComponent):
         Executor().Do(
             input_dict=input_dict, output_dict=output_dict, exec_properties=exec_properties
         )
+        self.output_dict = output_dict

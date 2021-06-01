@@ -49,7 +49,7 @@ class Executor(BaseExecutor):
             url = wget.download(url, tempfile.mkdtemp())
         return url
 
-    def _generate_mar_file(self, mar_config, mar_save_path):
+    def _generate_mar_file(self, mar_config: dict, mar_save_path: str, output_dict: dict):
 
         self._validate_mar_config(mar_config=mar_config)
 
@@ -74,6 +74,7 @@ class Executor(BaseExecutor):
 
         if "EXPORT_PATH" in mar_config:
             export_path = mar_config["EXPORT_PATH"]
+            output_dict[standard_component_specs.MAR_GENERATION_SAVE_PATH] = export_path
             if not os.path.exists(export_path):
                 Path(export_path).mkdir(parents=True, exist_ok=True)
 
@@ -113,6 +114,7 @@ class Executor(BaseExecutor):
             if not Path(mar_save_path).exists():
                 Path(mar_save_path).mkdir(parents=True, exist_ok=True)
             shutil.move(mar_file_local_path, mar_save_path)
+            output_dict[standard_component_specs.MAR_GENERATION_SAVE_PATH] = mar_save_path
 
         elif mar_config["EXPORT_PATH"] != mar_save_path:
             raise Exception(
@@ -127,7 +129,7 @@ class Executor(BaseExecutor):
         print(f"copying {mar_config['MODEL_FILE']} to {mar_config['EXPORT_PATH']}")
         shutil.copy(mar_config["MODEL_FILE"], mar_config["EXPORT_PATH"])
 
-    def _save_config_properties(self, mar_config, mar_save_path):
+    def _save_config_properties(self, mar_config: dict, mar_save_path: str, output_dict: dict):
         print("Downloading config properties")
         if "CONFIG_PROPERTIES" in mar_config:
             config_properties_local_path = self.download_config_properties(
@@ -136,7 +138,11 @@ class Executor(BaseExecutor):
         else:
             config_properties_local_path = mar_config["CONFIG_PROPERTIES"]
 
+        config_prop_path = os.path.join(mar_save_path, "config.properties")
+        if os.path.exists(config_prop_path):
+            os.remove(config_prop_path)
         shutil.move(config_properties_local_path, mar_save_path)
+        output_dict[standard_component_specs.CONFIG_PROPERTIES_SAVE_PATH] = mar_save_path
 
     def Do(self, input_dict: dict, output_dict: dict, exec_properties: dict):
         self._log_startup(
@@ -147,5 +153,9 @@ class Executor(BaseExecutor):
         )
         self._validate_mar_config(mar_config=mar_config)
 
-        self._generate_mar_file(mar_config=mar_config, mar_save_path=mar_save_path)
-        self._save_config_properties(mar_config=mar_config, mar_save_path=mar_save_path)
+        self._generate_mar_file(
+            mar_config=mar_config, mar_save_path=mar_save_path, output_dict=output_dict
+        )
+        self._save_config_properties(
+            mar_config=mar_config, mar_save_path=mar_save_path, output_dict=output_dict
+        )
