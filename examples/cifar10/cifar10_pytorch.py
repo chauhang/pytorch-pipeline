@@ -47,7 +47,6 @@ parser.add_argument(
     "--mlpipeline_ui_metadata",
     default="mlpipeline-ui-metadata.json",
     type=str,
-    default="mlpipeline-ui-metadata.json",
     help="Path to write mlpipeline-ui-metadata.json",
 )
 
