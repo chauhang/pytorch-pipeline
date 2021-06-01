@@ -41,7 +41,7 @@ DEFAULT_HANDLERS = [
 
 
 def generate_mar_file(config, save_path):
-    MarGeneration(mar_config=config).generate_mar_file(save_path)
+    MarGeneration(mar_config=config, mar_save_path=save_path)
     mar_path = os.path.join(EXPORT_PATH, "iris_classification.mar")
     config_properties = os.path.join(EXPORT_PATH, "config.properties")
     assert os.path.exists(mar_path)
@@ -51,15 +51,33 @@ def generate_mar_file(config, save_path):
     os.remove(config_properties)
 
 
-def test_mar_generation_empty_config():
-    empty_mar_config = {}
+def test_invalid_mar_config_parameter_type():
+    mar_config = "invalid_mar_config"
     tmp_dir = tempfile.mkdtemp()
 
     exception_msg = re.escape(
-        f"Mar config cannot be empty. Mandatory arguments are {MANDATORY_ARGS}"
+        f"mar_config must be of type <class 'dict'> but received as {type(mar_config)}"
     )
-    with pytest.raises(Exception, match=exception_msg):
-        MarGeneration(mar_config=empty_mar_config).generate_mar_file(tmp_dir)
+    with pytest.raises(TypeError, match=exception_msg):
+        MarGeneration(mar_config=mar_config, mar_save_path=tmp_dir)
+
+
+def test_invalid_mar_save_parameter_type():
+    mar_save_parameter = ["mar_save_path"]
+    exception_msg = re.escape(
+        f"mar_save_path must be of type <class 'str'> but received as {type(mar_save_parameter)}"
+    )
+    with pytest.raises(TypeError, match=exception_msg):
+        MarGeneration(mar_config=MAR_CONFIG, mar_save_path=mar_save_parameter)
+
+
+def test_invalid_mar_config_parameter_value():
+    mar_config = {}
+    tmp_dir = tempfile.mkdtemp()
+
+    exception_msg = re.escape("mar_config is not optional. Received value: {}".format(mar_config))
+    with pytest.raises(ValueError, match=exception_msg):
+        MarGeneration(mar_config=mar_config, mar_save_path=tmp_dir)
 
 
 @pytest.mark.parametrize("mandatory_key", MANDATORY_ARGS)
@@ -73,7 +91,7 @@ def test_mar_generation_mandatory_params_missing(mandatory_key):
         f"Following Mandatory keys are missing in the config file ['{mandatory_key}']"
     )
     with pytest.raises(Exception, match=excpetion_msg):
-        MarGeneration(mar_config=MAR_CONFIG).generate_mar_file(tmp_dir)
+        MarGeneration(mar_config=MAR_CONFIG, mar_save_path=tmp_dir)
 
     MAR_CONFIG[mandatory_key] = tmp_value
 
@@ -110,3 +128,13 @@ def test_mar_generation_optional_arguments(optional_arg):
     generate_mar_file(config=MAR_CONFIG, save_path=EXPORT_PATH)
 
     MAR_CONFIG.pop(optional_arg)
+
+
+def test_config_prop_invalid_url():
+    config_prop_url = "dummy"
+    MAR_CONFIG["CONFIG_PROPERTIES"] = "dummy"
+    exception_msg = "Unable to download config properties file using url - {}".format(
+        config_prop_url
+    )
+    with pytest.raises(ValueError, match=exception_msg):
+        generate_mar_file(config=MAR_CONFIG, save_path=EXPORT_PATH)

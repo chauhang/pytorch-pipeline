@@ -46,7 +46,13 @@ class Executor(BaseExecutor):
 
     def download_config_properties(self, url):
         if not os.path.exists(url):
-            url = wget.download(url, tempfile.mkdtemp())
+            try:
+                url = wget.download(url, tempfile.mkdtemp())
+            except ValueError as e:
+                raise ValueError(
+                    "Unable to download config properties file using url - {}".format(url)
+                )
+
         return url
 
     def _generate_mar_file(self, mar_config: dict, mar_save_path: str, output_dict: dict):
