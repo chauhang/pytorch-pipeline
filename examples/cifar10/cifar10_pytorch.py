@@ -109,8 +109,9 @@ if "profiler" in args and args["profiler"] != "":
 # Setting the datamodule specific arguments
 data_module_args = {"train_glob": args["dataset_path"]}
 
-#Setting tensorboard folder
+# Creating parent directories
 Path(args["tensorboard_root"]).mkdir(parents=True, exist_ok=True)
+Path(args["checkpoint_dir"]).mkdir(parents=True, exist_ok=True)
 
 # Initiating the training process
 trainer = Trainer(
@@ -199,3 +200,4 @@ if trainer.ptl_trainer.global_rank == 0:
 
     checpoint_dir_contents = os.listdir(args["checkpoint_dir"])
     print(f"Checkpoint Directory Contents: {checpoint_dir_contents}")
+
