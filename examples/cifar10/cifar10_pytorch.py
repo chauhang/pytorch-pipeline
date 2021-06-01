@@ -128,7 +128,7 @@ if trainer.ptl_trainer.global_rank == 0:
 
     mar_config = {
         "MODEL_NAME": "cifar10_test",
-        "MODEL_FILE": "pytorch_pipeline/examples/cifar10/cifar10_train.py",
+        "MODEL_FILE": "examples/cifar10/cifar10_train.py",
         "HANDLER": "image_classifier",
         "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
         "VERSION": "1",
