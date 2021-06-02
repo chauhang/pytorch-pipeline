@@ -62,5 +62,5 @@ class VisualizationSpec:
 
     EXECUTION_PROPERTIES = {
         VIZ_MLPIPELINE_UI_METADATA: Parameters(type=str, optional=True),
-        VIZ_MLPIPELINE_METRICS: Parameters(type=dict, optional=True),
+        VIZ_MLPIPELINE_METRICS: Parameters(type=str, optional=True),
     }
