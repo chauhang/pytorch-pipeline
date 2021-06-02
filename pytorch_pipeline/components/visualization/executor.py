@@ -160,6 +160,11 @@ class Executor(BaseExecutor):
             mlpipeline_ui_metadata=mlpipeline_ui_metadata, mlpipeline_metrics=mlpipeline_metrics
         )
 
+        if not (confusion_matrix_dict or test_accuracy or markdown):
+            raise ValueError(
+                "Any one of these keys should be set - confusion_matrix_dict, test_accuracy, markdown"
+            )
+
         if confusion_matrix_dict:
             self._generate_confusion_matrix(
                 confusion_matrix_dict=confusion_matrix_dict,
@@ -170,3 +175,8 @@ class Executor(BaseExecutor):
 
         if markdown:
             self._generate_markdown(markdown_dict=markdown)
+
+        output_dict[
+            standard_component_specs.VIZ_MLPIPELINE_UI_METADATA
+        ] = self.mlpipeline_ui_metadata
+        output_dict[standard_component_specs.VIZ_MLPIPELINE_METRICS] = self.mlpipeline_metrics
