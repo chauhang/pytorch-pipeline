@@ -63,7 +63,8 @@ def test_mandatory_keys_type_check(mandatory_key):
     test_input = ["input_path"]
     trainer_dict[mandatory_key] = test_input
     expected_exception_msg = (
-        f"{mandatory_key} must be of type <class 'str'> but received as {type(test_input)}"
+        f"{mandatory_key} must be of type "
+        f"<class 'str'> but received as {type(test_input)}"
     )
     with pytest.raises(TypeError, match=expected_exception_msg):
         invoke_training(trainer_params=trainer_dict)
@@ -80,7 +81,8 @@ def test_optional_keys_type_check(optional_key):
     test_input = "test_input"
     trainer_dict[optional_key] = test_input
     expected_exception_msg = (
-        f"{optional_key} must be of type <class 'dict'> but received as {type(test_input)}"
+        f"{optional_key} must be of type "
+        f"<class 'dict'> but received as {type(test_input)}"
     )
     with pytest.raises(TypeError, match=expected_exception_msg):
         invoke_training(trainer_params=trainer_dict)
@@ -96,7 +98,8 @@ def test_mandatory_params(input_key):
     trainer_dict = deepcopy(trainer_params)
     trainer_dict[input_key] = None
     expected_exception_msg = (
-        f"{input_key} is not optional. Received value: {trainer_dict[input_key]}"
+        f"{input_key} is not optional. "
+        f"Received value: {trainer_dict[input_key]}"
     )
     with pytest.raises(ValueError, match=expected_exception_msg):
         invoke_training(trainer_params=trainer_dict)
@@ -181,5 +184,7 @@ def test_trainer_output():
 
     assert hasattr(trainer, "output_dict")
     assert trainer.output_dict is not None
-    assert trainer.output_dict["model_save_path"] == os.path.join(tmp_dir, DEFAULT_MODEL_NAME)
-    assert isinstance(trainer.output_dict["ptl_trainer"], pytorch_lightning.trainer.trainer.Trainer)
+    assert trainer.output_dict["model_save_path"] \
+           == os.path.join(tmp_dir, DEFAULT_MODEL_NAME)
+    assert isinstance(trainer.output_dict["ptl_trainer"],
+                      pytorch_lightning.trainer.trainer.Trainer)
