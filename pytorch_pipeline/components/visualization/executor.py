@@ -1,20 +1,22 @@
-import pandas as pd
-import os
 import json
+import os
 import tempfile
-import boto3
-from io import StringIO
+from pathlib import Path
 from urllib.parse import urlparse
+
+import pandas as pd
 from sklearn.metrics import confusion_matrix
+
 from pytorch_pipeline.components.base.base_executor import BaseExecutor
 from pytorch_pipeline.components.minio.component import MinIO
+from pytorch_pipeline.types import standard_component_specs
 
 
 class Executor(BaseExecutor):
-    def __init__(self, mlpipeline_ui_metadata, mlpipeline_metrics, pod_template_spec=None):
-        self.mlpipeline_ui_metadata = mlpipeline_ui_metadata
-        self.mlpipeline_metrics = mlpipeline_metrics
-        self.pod_template_spec = pod_template_spec
+    def __init__(self):
+        super(Executor, self).__init__()
+        self.mlpipeline_ui_metadata = None
+        self.mlpipeline_metrics = None
 
     def _write_ui_metadata(self, metadata_filepath, metadata_dict, key="outputs"):
         if not os.path.exists(metadata_filepath):
@@ -55,9 +57,6 @@ class Executor(BaseExecutor):
             "source": confusion_matrix_path,
             "labels": list(map(str, classes)),
         }
-
-        if self.pod_template_spec:
-            metadata["pod_template_spec"] = self.pod_template_spec
 
         self._write_ui_metadata(
             metadata_filepath=self.mlpipeline_ui_metadata, metadata_dict=metadata
@@ -115,7 +114,52 @@ class Executor(BaseExecutor):
             metadata_filepath=self.mlpipeline_metrics, metadata_dict=metadata, key="metrics"
         )
 
-    def Do(self, confusion_matrix_dict=None, test_accuracy=None, markdown=None):
+    def _get_fn_args(self, input_dict: dict, exec_properties: dict):
+        confusion_matrix_dict = input_dict.get(standard_component_specs.VIZ_CONFUSION_MATRIX_DICT)
+        test_accuracy = input_dict.get(standard_component_specs.VIZ_TEST_ACCURACY)
+        markdown = input_dict.get(standard_component_specs.VIZ_MARKDOWN)
+
+        mlpipeline_ui_metadata = exec_properties.get(
+            standard_component_specs.VIZ_MLPIPELINE_UI_METADATA
+        )
+        mlpipeline_metrics = exec_properties.get(standard_component_specs.VIZ_MLPIPELINE_METRICS)
+
+        return (
+            confusion_matrix_dict,
+            test_accuracy,
+            markdown,
+            mlpipeline_ui_metadata,
+            mlpipeline_metrics,
+        )
+
+    def _set_defalt_mlpipeline_path(self, mlpipeline_ui_metadata: str, mlpipeline_metrics: str):
+
+        if mlpipeline_ui_metadata:
+            Path(os.path.dirname(mlpipeline_ui_metadata)).mkdir(parents=True, exist_ok=True)
+        else:
+            mlpipeline_ui_metadata = "/mlpipeline-ui-metadata.json"
+
+        if mlpipeline_metrics:
+            Path(os.path.dirname(mlpipeline_metrics)).mkdir(parents=True, exist_ok=True)
+        else:
+            mlpipeline_metrics = "/mlpipeline-metrics.json"
+
+        return mlpipeline_ui_metadata, mlpipeline_metrics
+
+    def Do(self, input_dict: dict, output_dict: dict, exec_properties: dict):
+
+        (
+            confusion_matrix_dict,
+            test_accuracy,
+            markdown,
+            mlpipeline_ui_metadata,
+            mlpipeline_metrics,
+        ) = self._get_fn_args(input_dict=input_dict, exec_properties=exec_properties)
+
+        self.mlpipeline_ui_metadata, self.mlpipeline_metrics = self._set_defalt_mlpipeline_path(
+            mlpipeline_ui_metadata=mlpipeline_ui_metadata, mlpipeline_metrics=mlpipeline_metrics
+        )
+
         if confusion_matrix_dict:
             self._generate_confusion_matrix(
                 confusion_matrix_dict=confusion_matrix_dict,

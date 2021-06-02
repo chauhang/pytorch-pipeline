@@ -16,9 +16,16 @@ PTL_TRAINER_ARGS = "trainer_args"
 TRAINER_MODEL_SAVE_PATH = "model_save_path"
 PTL_TRAINER_OBJ = "ptl_trainer"
 
+VIZ_MLPIPELINE_UI_METADATA = "mlpipeline_ui_metadata"
+VIZ_MLPIPELINE_METRICS = "mlpipeline_metrics"
+VIZ_CONFUSION_MATRIX_DICT = "confusion_matrix_dict"
+VIZ_TEST_ACCURACY = "test_accuracy"
+VIZ_MARKDOWN = "markdown"
+
 
 class Parameters:  # pylint: disable=R0903
     """Parameter class to match the desired type."""
+
     def __init__(self, type=None, optional=False):  # pylint: disable=redefined-builtin
         self.type = type
         self.optional = optional
@@ -29,6 +36,7 @@ class TrainerSpec:  # pylint: disable=R0903
 
     For validating the parameter 'type' .
     """
+
     INPUT_DICT = {
         TRAINER_MODULE_FILE: Parameters(type=str),
         TRAINER_DATA_MODULE_FILE: Parameters(type=str),
@@ -40,4 +48,19 @@ class TrainerSpec:  # pylint: disable=R0903
         TRAINER_DATA_MODULE_ARGS: Parameters(type=dict, optional=True),
         TRAINER_MODULE_ARGS: Parameters(type=dict),
         PTL_TRAINER_ARGS: Parameters(type=dict, optional=True),
+    }
+
+
+class VisualizationSpec:
+    INPUT_DICT = {
+        VIZ_CONFUSION_MATRIX_DICT: Parameters(type=dict, optional=True),
+        VIZ_TEST_ACCURACY: Parameters(type=float, optional=True),
+        VIZ_MARKDOWN: Parameters(type=dict, optional=True),
+    }
+
+    OUTPUT_DICT = {}
+
+    EXECUTION_PROPERTIES = {
+        VIZ_MLPIPELINE_UI_METADATA: Parameters(type=str, optional=True),
+        VIZ_MLPIPELINE_METRICS: Parameters(type=dict, optional=True),
     }

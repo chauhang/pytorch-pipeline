@@ -1,7 +1,6 @@
-import os
-from pathlib import Path
 from pytorch_pipeline.components.base.base_component import BaseComponent
-from pytorch_pipeline.components.visualization.Executor import Executor
+from pytorch_pipeline.components.visualization.executor import Executor
+from pytorch_pipeline.types import standard_component_specs
 
 
 class Visualization(BaseComponent):
@@ -9,29 +8,33 @@ class Visualization(BaseComponent):
         self,
         mlpipeline_ui_metadata=None,
         mlpipeline_metrics=None,
-        pod_template_spec=None,
         confusion_matrix_dict=None,
         test_accuracy=None,
         markdown=None,
     ):
         super(BaseComponent, self).__init__()
 
-        if mlpipeline_ui_metadata:
-            Path(os.path.dirname(mlpipeline_ui_metadata)).mkdir(parents=True, exist_ok=True)
-        else:
-            mlpipeline_ui_metadata = "/mlpipeline-ui-metadata.json"
+        input_dict = {
+            standard_component_specs.VIZ_MLPIPELINE_UI_METADATA: mlpipeline_ui_metadata,
+            standard_component_specs.VIZ_MLPIPELINE_METRICS: mlpipeline_metrics,
+        }
 
-        if mlpipeline_metrics:
-            Path(os.path.dirname(mlpipeline_metrics)).mkdir(parents=True, exist_ok=True)
-        else:
-            mlpipeline_metrics = "/mlpipeline-metrics.json"
+        output_dict = {}
 
-        Executor(
-            mlpipeline_ui_metadata=mlpipeline_ui_metadata,
-            mlpipeline_metrics=mlpipeline_metrics,
-            pod_template_spec=pod_template_spec,
-        ).Do(
-            confusion_matrix_dict=confusion_matrix_dict,
-            test_accuracy=test_accuracy,
-            markdown=markdown,
+        exec_properties = {
+            standard_component_specs.VIZ_CONFUSION_MATRIX_DICT: confusion_matrix_dict,
+            standard_component_specs.VIZ_TEST_ACCURACY: test_accuracy,
+            standard_component_specs.VIZ_MARKDOWN: markdown,
+        }
+
+        spec = standard_component_specs.VisualizationSpec()
+        self._validate_spec(
+            spec=spec,
+            input_dict=input_dict,
+            output_dict=output_dict,
+            exec_properties=exec_properties,
+        )
+
+        Executor().Do(
+            input_dict=input_dict, output_dict=output_dict, exec_properties=exec_properties
         )
