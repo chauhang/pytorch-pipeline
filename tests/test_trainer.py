@@ -127,7 +127,6 @@ def test_training_success():
         trainer.ptl_trainer, pytorch_lightning.trainer.trainer.Trainer
     )
 
-
 def test_training_success_with_custom_model_name():
     """Test for successful training with custom model name."""
     tmp_dir = tempfile.mkdtemp()
@@ -186,5 +185,3 @@ def test_trainer_output():
         trainer.output_dict["ptl_trainer"],
         pytorch_lightning.trainer.trainer.Trainer,
     )
-    print("*" * 1000)
-    print(type(trainer.output_dict["ptl_trainer"]))
