@@ -1,8 +1,10 @@
+import os
 from argparse import ArgumentParser
 
 import pytorch_lightning as pl
 
 from pytorch_pipeline.components.trainer.component import Trainer
+from pytorch_pipeline.components.mar.component import MarGeneration
 
 # Argument parser for user defined paths
 parser = ArgumentParser()
@@ -51,3 +53,18 @@ trainer = Trainer(
     data_module_args=None,
     trainer_args=trainer_args,
 )
+
+# Mar file generation
+
+mar_config = {
+    "MODEL_NAME": "iris_classification",
+    "MODEL_FILE": "tests/iris/iris_classification.py",
+    "HANDLER": "tests/iris/iris_handler.py",
+    "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
+    "VERSION": "1",
+    "EXPORT_PATH": args["checkpoint_dir"],
+    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties",
+}
+
+
+MarGeneration(mar_config=mar_config, mar_save_path=args["checkpoint_dir"])
