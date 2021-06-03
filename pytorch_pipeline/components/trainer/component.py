@@ -6,9 +6,9 @@
 # LICENSE file in the root directory of this source tree.
 """Training Component class."""
 from typing import Optional, Dict
-from pytorch_kfp_components.components.trainer.executor import Executor
-from pytorch_kfp_components.components.base.base_component import BaseComponent
-from pytorch_kfp_components.types import standard_component_specs
+from pytorch_pipeline.components.trainer.executor import Executor
+from pytorch_pipeline.components.base.base_component import BaseComponent
+from pytorch_pipeline.types import standard_component_specs
 
 
 class Trainer(BaseComponent):  # pylint: disable=R0903
