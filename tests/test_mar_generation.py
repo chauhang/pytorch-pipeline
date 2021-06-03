@@ -10,7 +10,7 @@ import re
 import subprocess
 import tempfile
 import pytest
-from pytorch_pipeline.components.mar.component import MarGeneration
+from pytorch_kfp_components.components.mar.component import MarGeneration
 
 IRIS_DIR = "tests/iris"
 EXPORT_PATH = tempfile.mkdtemp()

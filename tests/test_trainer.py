@@ -14,7 +14,7 @@ from copy import deepcopy
 import pytest
 import pytorch_lightning
 
-from pytorch_pipeline.components.trainer.component import Trainer
+from pytorch_kfp_components.components.trainer.component import Trainer
 
 IRIS_DIR = "tests/iris"
 sys.path.insert(0, IRIS_DIR)
