@@ -27,6 +27,17 @@ def viz_params():
     return VIZ_PARAMS
 
 
+@pytest.fixture(scope="class")
+def confusion_matrix_params():
+    CONFUSION_MATRIX_PARAMS = {
+        "actuals": ["1", "2", "3", "4"],
+        "preds": ["2", "3", "4", "0"],
+        "classes": ["dummy", "dummy"],
+        "url": "minio://dummy_bucket/folder_name",
+    }
+    return CONFUSION_MATRIX_PARAMS
+
+
 def generate_visualization(viz_params: dict):
     viz_obj = Visualization(
         mlpipeline_ui_metadata=viz_params["mlpipeline_ui_metadata"],
@@ -199,3 +210,44 @@ def test_multiple_metadata_appends(viz_params):
     with open(output_dict["mlpipeline_ui_metadata"]) as fp:
         data = json.load(fp)
     assert len(data["outputs"]) == 3
+
+
+@pytest.mark.parametrize(
+    "cm_key",
+    ["actuals", "preds", "classes", "url"],
+)
+def test_confusion_matrix_invalid_types(
+    viz_params, confusion_matrix_params, cm_key
+):
+    confusion_matrix_params[cm_key] = {"test": "dummy"}
+    viz_params["confusion_matrix_dict"] = confusion_matrix_params
+    with pytest.raises(TypeError):
+        generate_visualization(viz_params)
+
+
+@pytest.mark.parametrize(
+    "cm_key",
+    ["actuals", "preds", "classes", "url"],
+)
+def test_confusion_matrix_optional_check(
+    viz_params, confusion_matrix_params, cm_key
+):
+    confusion_matrix_params[cm_key] = {}
+    viz_params["confusion_matrix_dict"] = confusion_matrix_params
+    expected_error_msg = f"{cm_key} is not optional. Received value: {confusion_matrix_params[cm_key]}"
+    with pytest.raises(ValueError, match=expected_error_msg):
+        generate_visualization(viz_params)
+
+
+@pytest.mark.parametrize(
+    "cm_key",
+    ["actuals", "preds", "classes", "url"],
+)
+def test_confusion_matrix_missing_check(
+    viz_params, confusion_matrix_params, cm_key
+):
+    del confusion_matrix_params[cm_key]
+    viz_params["confusion_matrix_dict"] = confusion_matrix_params
+    expected_error_msg = f"Missing mandatory key - {cm_key}"
+    with pytest.raises(ValueError, match=expected_error_msg):
+        generate_visualization(viz_params)

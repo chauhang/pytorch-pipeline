@@ -20,9 +20,15 @@ VIZ_MLPIPELINE_UI_METADATA = "mlpipeline_ui_metadata"
 VIZ_MLPIPELINE_METRICS = "mlpipeline_metrics"
 VIZ_CONFUSION_MATRIX_DICT = "confusion_matrix_dict"
 VIZ_TEST_ACCURACY = "test_accuracy"
+
 VIZ_MARKDOWN = "markdown"
 VIZ_MARKDOWN_DICT_SOURCE = "source"
 VIZ_MARKDOWN_DICT_STORAGE = "storage"
+
+VIZ_CONFUSION_MATRIX_ACTUALS = "actuals"
+VIZ_CONFUSION_MATRIX_PREDS = "preds"
+VIZ_CONFUSION_MATRIX_CLASSES = "classes"
+VIZ_CONFUSION_MATRIX_URL = "url"
 
 
 class Parameters:  # pylint: disable=R0903
@@ -72,4 +78,11 @@ class VisualizationSpec:
     MARKDOWN_DICT = {
         VIZ_MARKDOWN_DICT_STORAGE: Parameters(type=str, optional=False),
         VIZ_MARKDOWN_DICT_SOURCE: Parameters(type=dict, optional=False),
+    }
+
+    CONFUSION_MATRIX_DICT = {
+        VIZ_CONFUSION_MATRIX_ACTUALS: Parameters(type=list, optional=False),
+        VIZ_CONFUSION_MATRIX_PREDS: Parameters(type=list, optional=False),
+        VIZ_CONFUSION_MATRIX_CLASSES: Parameters(type=list, optional=False),
+        VIZ_CONFUSION_MATRIX_URL: Parameters(type=str, optional=False),
     }
