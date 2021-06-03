@@ -1,10 +1,3 @@
-#!/usr/bin/env/python3
-# Copyright (c) Facebook, Inc. and its affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree.
-
 # pylint: disable=W0221
 # pylint: disable=W0613
 # pylint: disable=W0223
@@ -18,7 +11,6 @@ from pytorch_lightning.metrics import Accuracy
 
 
 class IrisClassification(pl.LightningModule):
-
     def __init__(self, **kwargs):
         super(IrisClassification, self).__init__()
 

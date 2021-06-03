@@ -60,8 +60,7 @@ class Executor(BaseExecutor):
 
         if not mar_config:
             raise ValueError(
-                f"Mar config cannot be empty. "
-                f"Mandatory arguments are {mandatory_args}"
+                f"Mar config cannot be empty. Mandatory arguments are {mandatory_args}"
             )
 
         missing_list = []
@@ -85,9 +84,8 @@ class Executor(BaseExecutor):
                 url = wget.download(url, tempfile.mkdtemp())
             except ValueError as e:
                 raise ValueError(
-                    "Unable to download config "
-                    "properties file using url - {}".format(url)
-                ) from e
+                    "Unable to download config properties file using url - {}".format(url)
+                )
 
         return url
 
@@ -153,8 +151,7 @@ class Executor(BaseExecutor):
                 error_msg=error_msg))
 
         # If user has provided the export path
-        # By default, torch-model-archiver
-        # generates the mar file inside the export path
+        # By default, torch-model-archiver generates the mar file inside the export path
 
         # If the user has not provieded the export path
         # mar file will be generated in the current working directory

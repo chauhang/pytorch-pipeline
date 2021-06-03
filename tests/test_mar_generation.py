@@ -10,13 +10,11 @@ import re
 import subprocess
 import tempfile
 import pytest
-from pytorch_kfp_components.components.mar.component import MarGeneration
+from pytorch_pipeline.components.mar.component import MarGeneration
 
 IRIS_DIR = "tests/iris"
 EXPORT_PATH = tempfile.mkdtemp()
 print(f"Export path: {EXPORT_PATH}")
-# with open(f"{EXPORT_PATH}/iris.pt","w") as fp :
-#     fp.write("dummy")
 
 MAR_CONFIG = {
     "MODEL_NAME":
@@ -61,8 +59,8 @@ def generate_mar_file(config, save_path):
         save_path : mar file save path
     """
     MarGeneration(mar_config=config, mar_save_path=save_path)
-    mar_path = os.path.join(save_path, "iris_classification.mar")
-    config_properties = os.path.join(save_path, "config.properties")
+    mar_path = os.path.join(EXPORT_PATH, "iris_classification.mar")
+    config_properties = os.path.join(EXPORT_PATH, "config.properties")
     assert os.path.exists(mar_path)
     assert os.path.exists(config_properties)
 
@@ -76,8 +74,7 @@ def test_invalid_mar_config_parameter_type():
     tmp_dir = tempfile.mkdtemp()
 
     exception_msg = re.escape(
-        f"mar_config must be of "
-        f"type <class 'dict'> but received as {type(mar_config)}"
+        f"mar_config must be of type <class 'dict'> but received as {type(mar_config)}"
     )
     with pytest.raises(TypeError, match=exception_msg):
         MarGeneration(mar_config=mar_config, mar_save_path=tmp_dir)
@@ -91,8 +88,7 @@ def test_invalid_mar_save_parameter_type():
     """
     mar_save_parameter = ["mar_save_path"]
     exception_msg = re.escape(
-        f"mar_save_path must be of "
-        f"type <class 'str'> but received as {type(mar_save_parameter)}"
+        f"mar_save_path must be of type <class 'str'> but received as {type(mar_save_parameter)}"
     )
     with pytest.raises(TypeError, match=exception_msg):
         MarGeneration(mar_config=MAR_CONFIG, mar_save_path=mar_save_parameter)
@@ -128,8 +124,7 @@ def test_mar_generation_mandatory_params_missing(mandatory_key):
 
     tmp_dir = tempfile.mkdtemp()
     excpetion_msg = re.escape(
-        f"Following Mandatory keys are "
-        f"missing in the config file ['{mandatory_key}']"
+        f"Following Mandatory keys are missing in the config file ['{mandatory_key}']"
     )
     with pytest.raises(Exception, match=excpetion_msg):
         MarGeneration(mar_config=MAR_CONFIG, mar_save_path=tmp_dir)
@@ -151,7 +146,6 @@ def test_mar_generation_success():
     subprocess.run(cmd)  #pylint: disable=W1510
     os.chdir(cwd)
     generate_mar_file(config=MAR_CONFIG, save_path=EXPORT_PATH)
-    print("export path need to watch >>>>>>>>>>>>>",EXPORT_PATH)
 
 
 @pytest.mark.parametrize("handler", DEFAULT_HANDLERS)
@@ -181,6 +175,7 @@ def test_mar_generation_optional_arguments(optional_arg):
     generate_mar_file(config=MAR_CONFIG, save_path=EXPORT_PATH)
 
     MAR_CONFIG.pop(optional_arg)
+
 
 def test_config_prop_invalid_url():
     """Test mar generation with invalid config.properties url."""
