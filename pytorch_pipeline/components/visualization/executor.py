@@ -22,15 +22,15 @@ from pytorch_pipeline.types import standard_component_specs
 
 class Executor(BaseExecutor):  # pylint: disable=R0903
     """Visualization Executor Class."""
+
     def __init__(self):
         super(Executor, self).__init__()  # pylint: disable=R1725
         self.mlpipeline_ui_metadata = None
         self.mlpipeline_metrics = None
 
-    def _write_ui_metadata(self,
-                           metadata_filepath,
-                           metadata_dict,
-                           key="outputs"):
+    def _write_ui_metadata(
+        self, metadata_filepath, metadata_dict, key="outputs"
+    ):
         """Function to write the metadata to UI."""
         if not os.path.exists(metadata_filepath):
             metadata = {key: [metadata_dict]}
@@ -50,9 +50,9 @@ class Executor(BaseExecutor):  # pylint: disable=R0903
         Args:
             markdown_dict : dict of markdown specifications
         """
-        source_str = json.dumps(markdown_dict["source"],
-                                sort_keys=True,
-                                indent=4)
+        source_str = json.dumps(
+            markdown_dict["source"], sort_keys=True, indent=4
+        )
         source = f"```json \n {source_str} ```"
         markdown_metadata = {
             "storage": markdown_dict["storage"],
@@ -65,33 +65,21 @@ class Executor(BaseExecutor):  # pylint: disable=R0903
             metadata_dict=markdown_metadata,
         )
 
-    def _generate_confusion_matrix_metadata(self, confusion_matrix_path,
-                                            classes):
+    def _generate_confusion_matrix_metadata(
+        self, confusion_matrix_path, classes
+    ):
         """Generates the confusion matrix metadata and writes in ui."""
         print("Generating Confusion matrix Metadata")
         metadata = {
-            "type":
-            "confusion_matrix",
-            "format":
-            "csv",
+            "type": "confusion_matrix",
+            "format": "csv",
             "schema": [
-                {
-                    "name": "target",
-                    "type": "CATEGORY"
-                },
-                {
-                    "name": "predicted",
-                    "type": "CATEGORY"
-                },
-                {
-                    "name": "count",
-                    "type": "NUMBER"
-                },
+                {"name": "target", "type": "CATEGORY"},
+                {"name": "predicted", "type": "CATEGORY"},
+                {"name": "count", "type": "NUMBER"},
             ],
-            "source":
-            confusion_matrix_path,
-            "labels":
-            list(map(str, classes)),
+            "source": confusion_matrix_path,
+            "labels": list(map(str, classes)),
         }
 
         self._write_ui_metadata(
@@ -99,34 +87,9 @@ class Executor(BaseExecutor):  # pylint: disable=R0903
             metadata_dict=metadata,
         )
 
-    def _generate_confusion_matrix(self, confusion_matrix_dict):  # pylint: disable=R0914
-        """Generates confusion matrix in minio."""
-        actuals = confusion_matrix_dict["actuals"]
-        preds = confusion_matrix_dict["preds"]
-        confusion_matrix_url = confusion_matrix_dict["url"]
-
-        # Generating confusion matrix
-        df = pd.DataFrame(list(zip(actuals, preds)),
-                          columns=["target", "predicted"])
-        vocab = list(df["target"].unique())
-        cm = confusion_matrix(df["target"], df["predicted"], labels=vocab)
-        data = []
-        for target_index, target_row in enumerate(cm):
-            for predicted_index, count in enumerate(target_row):
-                data.append(
-                    (vocab[target_index], vocab[predicted_index], count))
-
-        confusion_matrix_df = pd.DataFrame(
-            data, columns=["target", "predicted", "count"])
-
-        confusion_matrix_output_dir = str(tempfile.mkdtemp())
-        confusion_matrix_output_path = os.path.join(
-            confusion_matrix_output_dir, "confusion_matrix.csv")
-        # saving confusion matrix
-        confusion_matrix_df.to_csv(confusion_matrix_output_path,
-                                   index=False,
-                                   header=False)
-
+    def _upload_confusion_matrix_to_minio(
+        self, confusion_matrix_url, confusion_matrix_output_path
+    ):
         parse_obj = urlparse(confusion_matrix_url, allow_fragments=False)
         bucket_name = parse_obj.netloc
         folder_name = str(parse_obj.path).lstrip("/")
@@ -140,10 +103,50 @@ class Executor(BaseExecutor):  # pylint: disable=R0903
             endpoint=endpoint,
         )
 
+    def _generate_confusion_matrix(
+        self, confusion_matrix_dict
+    ):  # pylint: disable=R0914
+        """Generates confusion matrix in minio."""
+        actuals = confusion_matrix_dict["actuals"]
+        preds = confusion_matrix_dict["preds"]
+        confusion_matrix_url = confusion_matrix_dict["url"]
+
+        # Generating confusion matrix
+        df = pd.DataFrame(
+            list(zip(actuals, preds)), columns=["target", "predicted"]
+        )
+        vocab = list(df["target"].unique())
+        cm = confusion_matrix(df["target"], df["predicted"], labels=vocab)
+        data = []
+        for target_index, target_row in enumerate(cm):
+            for predicted_index, count in enumerate(target_row):
+                data.append(
+                    (vocab[target_index], vocab[predicted_index], count)
+                )
+
+        confusion_matrix_df = pd.DataFrame(
+            data, columns=["target", "predicted", "count"]
+        )
+
+        confusion_matrix_output_dir = str(tempfile.mkdtemp())
+        confusion_matrix_output_path = os.path.join(
+            confusion_matrix_output_dir, "confusion_matrix.csv"
+        )
+        # saving confusion matrix
+        confusion_matrix_df.to_csv(
+            confusion_matrix_output_path, index=False, header=False
+        )
+
+        self._upload_confusion_matrix_to_minio(
+            confusion_matrix_url=confusion_matrix_url,
+            confusion_matrix_output_path=confusion_matrix_output_path,
+        )
+
         # Generating metadata
         self._generate_confusion_matrix_metadata(
-            confusion_matrix_path=os.path.join(confusion_matrix_url,
-                                               "confusion_matrix.csv"),
+            confusion_matrix_path=os.path.join(
+                confusion_matrix_url, "confusion_matrix.csv"
+            ),
             classes=vocab,
         )
 
@@ -177,15 +180,19 @@ class Executor(BaseExecutor):  # pylint: disable=R0903
             mlpipeline_metrics : metrics to be uploaded
         """
         confusion_matrix_dict = input_dict.get(
-            standard_component_specs.VIZ_CONFUSION_MATRIX_DICT)
+            standard_component_specs.VIZ_CONFUSION_MATRIX_DICT
+        )
         test_accuracy = input_dict.get(
-            standard_component_specs.VIZ_TEST_ACCURACY)
+            standard_component_specs.VIZ_TEST_ACCURACY
+        )
         markdown = input_dict.get(standard_component_specs.VIZ_MARKDOWN)
 
         mlpipeline_ui_metadata = exec_properties.get(
-            standard_component_specs.VIZ_MLPIPELINE_UI_METADATA)
+            standard_component_specs.VIZ_MLPIPELINE_UI_METADATA
+        )
         mlpipeline_metrics = exec_properties.get(
-            standard_component_specs.VIZ_MLPIPELINE_METRICS)
+            standard_component_specs.VIZ_MLPIPELINE_METRICS
+        )
 
         return (
             confusion_matrix_dict,
@@ -195,19 +202,22 @@ class Executor(BaseExecutor):  # pylint: disable=R0903
             mlpipeline_metrics,
         )
 
-    def _set_defalt_mlpipeline_path(self, mlpipeline_ui_metadata: str,
-                                    mlpipeline_metrics: str):
+    def _set_defalt_mlpipeline_path(
+        self, mlpipeline_ui_metadata: str, mlpipeline_metrics: str
+    ):
         """Sets the default mlpipeline path."""
 
         if mlpipeline_ui_metadata:
-            Path(os.path.dirname(mlpipeline_ui_metadata)).mkdir(parents=True,
-                                                                exist_ok=True)
+            Path(os.path.dirname(mlpipeline_ui_metadata)).mkdir(
+                parents=True, exist_ok=True
+            )
         else:
             mlpipeline_ui_metadata = "/mlpipeline-ui-metadata.json"
 
         if mlpipeline_metrics:
-            Path(os.path.dirname(mlpipeline_metrics)).mkdir(parents=True,
-                                                            exist_ok=True)
+            Path(os.path.dirname(mlpipeline_metrics)).mkdir(
+                parents=True, exist_ok=True
+            )
         else:
             mlpipeline_metrics = "/mlpipeline-metrics.json"
 
@@ -229,8 +239,9 @@ class Executor(BaseExecutor):  # pylint: disable=R0903
             markdown,
             mlpipeline_ui_metadata,
             mlpipeline_metrics,
-        ) = self._get_fn_args(input_dict=input_dict,
-                              exec_properties=exec_properties)
+        ) = self._get_fn_args(
+            input_dict=input_dict, exec_properties=exec_properties
+        )
 
         (
             self.mlpipeline_ui_metadata,
@@ -247,7 +258,8 @@ class Executor(BaseExecutor):  # pylint: disable=R0903
 
         if confusion_matrix_dict:
             self._generate_confusion_matrix(
-                confusion_matrix_dict=confusion_matrix_dict, )
+                confusion_matrix_dict=confusion_matrix_dict,
+            )
 
         if test_accuracy:
             self._visualize_accuracy_metric(accuracy=test_accuracy)
@@ -258,4 +270,6 @@ class Executor(BaseExecutor):  # pylint: disable=R0903
         output_dict[
             standard_component_specs.VIZ_MLPIPELINE_UI_METADATA
         ] = self.mlpipeline_ui_metadata
-        output_dict[standard_component_specs.VIZ_MLPIPELINE_METRICS] = self.mlpipeline_metrics
+        output_dict[
+            standard_component_specs.VIZ_MLPIPELINE_METRICS
+        ] = self.mlpipeline_metrics

@@ -1,7 +1,9 @@
 import pytest
 import os
 import json
+import mock
 from pytorch_pipeline.components.visualization.component import Visualization
+from pytorch_pipeline.components.visualization.executor import Executor
 from unittest.mock import patch
 import tempfile
 
@@ -251,3 +253,18 @@ def test_confusion_matrix_missing_check(
     expected_error_msg = f"Missing mandatory key - {cm_key}"
     with pytest.raises(ValueError, match=expected_error_msg):
         generate_visualization(viz_params)
+
+
+def test_confusion_matrix_success(viz_params, confusion_matrix_params):
+    if os.path.exists(viz_params["mlpipeline_ui_metadata"]):
+        os.remove(viz_params["mlpipeline_ui_metadata"])
+    viz_params["confusion_matrix_dict"] = confusion_matrix_params
+    with mock.patch.object(Executor, "_upload_confusion_matrix_to_minio"):
+        output_dict = generate_visualization(viz_params)
+
+    assert output_dict is not None
+    assert "mlpipeline_ui_metadata" in output_dict
+    assert os.path.exists(output_dict["mlpipeline_ui_metadata"])
+    with open(output_dict["mlpipeline_ui_metadata"]) as fp:
+        data = fp.read()
+    assert "confusion_matrix" in data
