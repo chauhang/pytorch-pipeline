@@ -21,12 +21,16 @@ VIZ_MLPIPELINE_METRICS = "mlpipeline_metrics"
 VIZ_CONFUSION_MATRIX_DICT = "confusion_matrix_dict"
 VIZ_TEST_ACCURACY = "test_accuracy"
 VIZ_MARKDOWN = "markdown"
+VIZ_MARKDOWN_DICT_SOURCE = "source"
+VIZ_MARKDOWN_DICT_STORAGE = "storage"
 
 
 class Parameters:  # pylint: disable=R0903
     """Parameter class to match the desired type."""
 
-    def __init__(self, type=None, optional=False):  # pylint: disable=redefined-builtin
+    def __init__(
+        self, type=None, optional=False
+    ):  # pylint: disable=redefined-builtin
         self.type = type
         self.optional = optional
 
@@ -63,4 +67,9 @@ class VisualizationSpec:
     EXECUTION_PROPERTIES = {
         VIZ_MLPIPELINE_UI_METADATA: Parameters(type=str, optional=True),
         VIZ_MLPIPELINE_METRICS: Parameters(type=str, optional=True),
+    }
+
+    MARKDOWN_DICT = {
+        VIZ_MARKDOWN_DICT_STORAGE: Parameters(type=str, optional=False),
+        VIZ_MARKDOWN_DICT_SOURCE: Parameters(type=dict, optional=False),
     }
