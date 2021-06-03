@@ -4,14 +4,15 @@
 #
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
-
 """Training Executor class."""
 
 import os
 from argparse import Namespace
 import pytorch_lightning as pl
 import torch
-from pytorch_pipeline.components.trainer.generic_executor import GenericExecutor
+from pytorch_pipeline.components.trainer.generic_executor import (
+    GenericExecutor,
+)
 from pytorch_pipeline.types import standard_component_specs
 
 
@@ -26,9 +27,11 @@ class Executor(GenericExecutor):
         loop.
 
         Args:
-            input_dict : The dictionary of inputs.Example : model file, data module file
+            input_dict : The dictionary of inputs.Example
+            : model file, data module file
             output_dict :
-            exec_properties : A dict of execution properties including data_module_args,
+            exec_properties : A dict of execution properties
+                            including data_module_args,
                              trainer_args, module_file_args
 
         Returns:
@@ -37,10 +40,13 @@ class Executor(GenericExecutor):
         Raises:
             ValueError : If both of module_file_arfs or trainer_args are empty.
             TypeError : If the type of trainer_args is not dict.
-            NotImplementedError : If mandatory args; module_file or data_module_file is empty.
+            NotImplementedError : If mandatory args;
+                                module_file or data_module_file is empty.
         """
         self._log_startup(
-            input_dict=input_dict, output_dict=output_dict, exec_properties=exec_properties
+            input_dict=input_dict,
+            output_dict=output_dict,
+            exec_properties=exec_properties,
         )
 
         (
@@ -50,20 +56,27 @@ class Executor(GenericExecutor):
             module_file_args,
             data_module_args,
         ) = self._GetFnArgs(
-            input_dict=input_dict, output_dict=output_dict, execution_properties=exec_properties
+            input_dict=input_dict,
+            output_dict=output_dict,
+            execution_properties=exec_properties,
         )
 
-        model_class, data_module_class = self.derive_model_and_data_module_class(
+        (
+            model_class,
+            data_module_class,
+        ) = self.derive_model_and_data_module_class(
             module_file=module_file, data_module_file=data_module_file
         )
         if data_module_class:
-            data_module = data_module_class(**data_module_args if data_module_args else {})
+            data_module = data_module_class(
+                **data_module_args if data_module_args else {}
+            )
             data_module.prepare_data()
             data_module.setup(stage="fit")
             model = model_class(**module_file_args if module_file_args else {})
 
             if (not module_file_args) and (not trainer_args):
-                raise ValueError("Both module file args and trainer args cannot be empty")
+                raise ValueError("Module file & trainer args can't be empty")
 
             if not isinstance(trainer_args, dict):
                 raise TypeError("trainer_args must be a dict")
@@ -89,7 +102,8 @@ class Executor(GenericExecutor):
             print("Saving model to {}".format(model_save_path))
             torch.save(model.state_dict(), model_save_path)
 
-            output_dict[standard_component_specs.TRAINER_MODEL_SAVE_PATH] = model_save_path
+            output_dict[standard_component_specs.TRAINER_MODEL_SAVE_PATH
+                       ] = model_save_path
             output_dict[standard_component_specs.PTL_TRAINER_OBJ] = trainer
 
         else:
