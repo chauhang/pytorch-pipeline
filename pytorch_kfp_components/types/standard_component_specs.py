@@ -63,7 +63,7 @@ class TrainerSpec:  # pylint: disable=R0903
 
 
 class MarGenerationSpec:  # pylint: disable=R0903
-    """Trainer Specification class.
+    """Mar Specification class.
     For validating the parameter 'type' .
     """
 
@@ -78,6 +78,9 @@ class MarGenerationSpec:  # pylint: disable=R0903
     }
 
 class VisualizationSpec:
+    """Visualization Specification class.
+    For validating the parameter 'type'
+    """
     INPUT_DICT = {
         VIZ_CONFUSION_MATRIX_DICT: Parameters(type=dict, optional=True),
         VIZ_TEST_ACCURACY: Parameters(type=float, optional=True),
