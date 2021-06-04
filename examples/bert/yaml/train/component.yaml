@@ -16,7 +16,9 @@ outputs:
   - {name: MLPipeline Metrics}
 implementation:
   container:
-    image: public.ecr.aws/y1x1p2u5/pytorch_pipeline:21052021_v1.0
+    # For GPU use
+    # image: public.ecr.aws/y1x1p2u5/pytorch_kfp_components:v1.1-gpu
+    image: public.ecr.aws/y1x1p2u5/pytorch_kfp_components:v1.1
     command: ["python3", "examples/bert/agnews_classification_pytorch.py"]
     args:
       - --dataset_path
