@@ -1,5 +1,5 @@
 boto3
-git+https://github.com/PyTorchLightning/pytorch-lightning.git@master
+pytorch-lightning
 image
 matplotlib
 torch
