@@ -1,37 +1,57 @@
-import pytest
+#!/usr/bin/env/python3
+# Copyright (c) Facebook, Inc. and its affiliates.
+# All rights reserved.
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree.
+"""Unit tests for visualization component."""
 import os
 import json
+import tempfile
+from unittest.mock import patch
 import mock
 from pytorch_pipeline.components.visualization.component import Visualization
 from pytorch_pipeline.components.visualization.executor import Executor
-from unittest.mock import patch
-import tempfile
+import pytest
 
 metdata_dir = tempfile.mkdtemp()
 
 
 @pytest.fixture(scope="class")
 def viz_params():
-    MARKDOWN_PARAMS = {
+    """Setting visualization parameters.
+
+    Returns:
+        VIZ_PARAMS : dict of visualization parameters.
+    """
+    MARKDOWN_PARAMS = {  #pylint: disable=invalid-name
         "storage": "dummy-storage",
-        "source": {"dummy_key": "dummy_value"},
+        "source": {
+            "dummy_key": "dummy_value"
+        },
     }
 
-    VIZ_PARAMS = {
-        "mlpipeline_ui_metadata": os.path.join(
-            metdata_dir, "mlpipeline_ui_metadata.json"
-        ),
-        "mlpipeline_metrics": os.path.join(metdata_dir, "mlpipeline_metrics"),
+    VIZ_PARAMS = {  #pylint: disable=invalid-name
+        "mlpipeline_ui_metadata":
+        os.path.join(metdata_dir, "mlpipeline_ui_metadata.json"),
+        "mlpipeline_metrics":
+        os.path.join(metdata_dir, "mlpipeline_metrics"),
         "confusion_matrix_dict": {},
-        "test_accuracy": 99.05,
-        "markdown": MARKDOWN_PARAMS,
+        "test_accuracy":
+        99.05,
+        "markdown":
+        MARKDOWN_PARAMS,
     }
     return VIZ_PARAMS
 
 
 @pytest.fixture(scope="class")
 def confusion_matrix_params():
-    CONFUSION_MATRIX_PARAMS = {
+    """Setting the confusion matrix parameters.
+
+    Returns:
+        CONFUSION_MATRIX_PARAMS : Dict of confusion matrix parmas
+    """
+    CONFUSION_MATRIX_PARAMS = {  #pylint: disable=invalid-name
         "actuals": ["1", "2", "3", "4"],
         "preds": ["2", "3", "4", "0"],
         "classes": ["dummy", "dummy"],
@@ -40,7 +60,12 @@ def confusion_matrix_params():
     return CONFUSION_MATRIX_PARAMS
 
 
-def generate_visualization(viz_params: dict):
+def generate_visualization(viz_params: dict):  #pylint: disable=redefined-outer-name
+    """Generates the visualization object.
+
+    Returns:
+        output_dict : output dict of vizualization obj.
+    """
     viz_obj = Visualization(
         mlpipeline_ui_metadata=viz_params["mlpipeline_ui_metadata"],
         mlpipeline_metrics=viz_params["mlpipeline_metrics"],
@@ -60,13 +85,15 @@ def generate_visualization(viz_params: dict):
         "markdown",
     ],
 )
-def test_invalid_type_viz_params(viz_params, viz_key):
+def test_invalid_type_viz_params(viz_params, viz_key):  #pylint: disable=redefined-outer-name
+    """Test visualization for invalid parameter type."""
     viz_params[viz_key] = "dummy"
     if viz_key == "test_accuracy":
         expected_type = "<class 'float'>"
     else:
         expected_type = "<class 'dict'>"
-    expected_exception_msg = f"{viz_key} must be of type {expected_type} but received as {type(viz_params[viz_key])}"
+    expected_exception_msg = f"{viz_key} must be of type {expected_type} but" \
+                             f" received as {type(viz_params[viz_key])}"
     with pytest.raises(TypeError, match=expected_exception_msg):
         generate_visualization(viz_params)
 
@@ -78,10 +105,12 @@ def test_invalid_type_viz_params(viz_params, viz_key):
         "mlpipeline_metrics",
     ],
 )
-def test_invalid_type_metadata_path(viz_params, viz_key):
+def test_invalid_type_metadata_path(viz_params, viz_key):  #pylint: disable=redefined-outer-name
+    """Test visualization with invalid metadata path."""
 
     viz_params[viz_key] = ["dummy"]
-    expected_exception_msg = f"{viz_key} must be of type <class 'str'> but received as {type(viz_params[viz_key])}"
+    expected_exception_msg = f"{viz_key} must be of type <class 'str'> " \
+                             f"but received as {type(viz_params[viz_key])}"
     with pytest.raises(TypeError, match=expected_exception_msg):
         generate_visualization(viz_params)
 
@@ -93,23 +122,26 @@ def test_invalid_type_metadata_path(viz_params, viz_key):
         "mlpipeline_metrics",
     ],
 )
-def test_default_metadata_path(viz_params, viz_key):
+def test_default_metadata_path(viz_params, viz_key):  #pylint: disable=redefined-outer-name
+    """Test visualization with default metadata path."""
     viz_params[viz_key] = None
     expected_output = {
         "mlpipeline_ui_metadata": "/mlpipeline-ui-metadata.json",
         "mlpipeline_metrics": "/mlpipeline-metrics.json",
     }
     with patch(
-        "test_visualization.generate_visualization",
-        return_value=expected_output,
+            "test_visualization.generate_visualization",
+            return_value=expected_output,
     ):
         output_dict = generate_visualization(viz_params)
     assert output_dict == expected_output
 
 
-def test_custom_metadata_path(viz_params, tmpdir):
+def test_custom_metadata_path(viz_params, tmpdir):  #pylint: disable=redefined-outer-name
+    """Test visualization with custom metadata path."""
     metadata_ui_path = os.path.join(str(tmpdir), "mlpipeline_ui_metadata.json")
-    metadata_metrics_path = os.path.join(str(tmpdir), "mlpipeline_metrics.json")
+    metadata_metrics_path = os.path.join(str(tmpdir),
+                                         "mlpipeline_metrics.json")
     viz_params["mlpipeline_ui_metadata"] = metadata_ui_path
     viz_params["mlpipeline_metrics"] = metadata_metrics_path
     output_dict = generate_visualization(viz_params)
@@ -120,43 +152,44 @@ def test_custom_metadata_path(viz_params, tmpdir):
     assert os.path.exists(metadata_metrics_path)
 
 
-def test_setting_all_keys_to_none(viz_params):
+def test_setting_all_keys_to_none(viz_params):  #pylint: disable=redefined-outer-name
+    """Test visialization with all parameters set to None tyoe."""
     for key in viz_params.keys():
         viz_params[key] = None
 
-    expected_exception_msg = r"Any one of these keys should be set - confusion_matrix_dict, test_accuracy, markdown"
+    expected_exception_msg = r"Any one of these keys should be set -" \
+                             r" confusion_matrix_dict, test_accuracy, markdown"
     with pytest.raises(ValueError, match=expected_exception_msg):
         generate_visualization(viz_params)
 
 
-def test_accuracy_metric(viz_params):
+def test_accuracy_metric(viz_params):  #pylint: disable=redefined-outer-name
+    """Test for getting proper accuracy metric."""
     output_dict = generate_visualization(viz_params)
     assert output_dict is not None
     metadata_metric_file = viz_params["mlpipeline_metrics"]
     assert os.path.exists(metadata_metric_file)
-    with open(metadata_metric_file) as fp:
+    with open(metadata_metric_file) as fp:  #pylint: disable=invalid-name
         data = json.load(fp)
     assert data["metrics"][0]["numberValue"] == viz_params["test_accuracy"]
 
 
-def test_markdown_storage_invalid_datatype(viz_params):
+def test_markdown_storage_invalid_datatype(viz_params):  #pylint: disable=redefined-outer-name
+    """Test for passing invalid markdown storage datatype."""
     viz_params["markdown"]["storage"] = ["test"]
     expected_exception_msg = (
         r"storage must be of type <class 'str'> but received as {}".format(
-            type(viz_params["markdown"]["storage"])
-        )
-    )
+            type(viz_params["markdown"]["storage"])))
     with pytest.raises(TypeError, match=expected_exception_msg):
         generate_visualization(viz_params)
 
 
-def test_markdown_source_invalid_datatype(viz_params):
+def test_markdown_source_invalid_datatype(viz_params):  #pylint: disable=redefined-outer-name
+    """Test for passing invalid markdown source datatype."""
     viz_params["markdown"]["source"] = "test"
     expected_exception_msg = (
         r"source must be of type <class 'dict'> but received as {}".format(
-            type(viz_params["markdown"]["source"])
-        )
-    )
+            type(viz_params["markdown"]["source"])))
     with pytest.raises(TypeError, match=expected_exception_msg):
         generate_visualization(viz_params)
 
@@ -168,36 +201,40 @@ def test_markdown_source_invalid_datatype(viz_params):
         "storage",
     ],
 )
-def test_markdown_source_missing_key(viz_params, markdown_key):
+def test_markdown_source_missing_key(viz_params, markdown_key):  #pylint: disable=redefined-outer-name
+    """Test with markdown source missing keys."""
     del viz_params["markdown"][markdown_key]
     expected_exception_msg = r"Missing mandatory key - {}".format(markdown_key)
     with pytest.raises(ValueError, match=expected_exception_msg):
         generate_visualization(viz_params)
 
 
-def test_markdown_success(viz_params):
+def test_markdown_success(viz_params):  #pylint: disable=redefined-outer-name
+    """Test for successful markdown generation."""
     output_dict = generate_visualization(viz_params)
     assert output_dict is not None
     assert "mlpipeline_ui_metadata" in output_dict
     assert os.path.exists(output_dict["mlpipeline_ui_metadata"])
-    with open(output_dict["mlpipeline_ui_metadata"]) as fp:
+    with open(output_dict["mlpipeline_ui_metadata"]) as fp:  #pylint: disable=invalid-name
         data = fp.read()
     assert "dummy_key" in data
     assert "dummy_value" in data
 
 
-def test_different_storage_value(viz_params):
+def test_different_storage_value(viz_params):  #pylint: disable=redefined-outer-name
+    """Test for different storgae values for markdown."""
     viz_params["markdown"]["storage"] = "inline"
     output_dict = generate_visualization(viz_params)
     assert output_dict is not None
     assert "mlpipeline_ui_metadata" in output_dict
     assert os.path.exists(output_dict["mlpipeline_ui_metadata"])
-    with open(output_dict["mlpipeline_ui_metadata"]) as fp:
+    with open(output_dict["mlpipeline_ui_metadata"]) as fp:  #pylint: disable=invalid-name
         data = fp.read()
     assert "inline" in data
 
 
-def test_multiple_metadata_appends(viz_params):
+def test_multiple_metadata_appends(viz_params):  #pylint: disable=redefined-outer-name
+    """Test for multiple metadata append."""
     if os.path.exists(viz_params["mlpipeline_ui_metadata"]):
         os.remove(viz_params["mlpipeline_ui_metadata"])
 
@@ -209,7 +246,7 @@ def test_multiple_metadata_appends(viz_params):
     assert output_dict is not None
     assert "mlpipeline_ui_metadata" in output_dict
     assert os.path.exists(output_dict["mlpipeline_ui_metadata"])
-    with open(output_dict["mlpipeline_ui_metadata"]) as fp:
+    with open(output_dict["mlpipeline_ui_metadata"]) as fp:  #pylint: disable=invalid-name
         data = json.load(fp)
     assert len(data["outputs"]) == 3
 
@@ -219,8 +256,10 @@ def test_multiple_metadata_appends(viz_params):
     ["actuals", "preds", "classes", "url"],
 )
 def test_confusion_matrix_invalid_types(
-    viz_params, confusion_matrix_params, cm_key
-):
+        viz_params,
+        confusion_matrix_params,  #pylint: disable=redefined-outer-name
+        cm_key):
+    """Test for invalid type keys for confusion matrix."""
     confusion_matrix_params[cm_key] = {"test": "dummy"}
     viz_params["confusion_matrix_dict"] = confusion_matrix_params
     with pytest.raises(TypeError):
@@ -232,11 +271,14 @@ def test_confusion_matrix_invalid_types(
     ["actuals", "preds", "classes", "url"],
 )
 def test_confusion_matrix_optional_check(
-    viz_params, confusion_matrix_params, cm_key
-):
+        viz_params,
+        confusion_matrix_params,  #pylint: disable=redefined-outer-name
+        cm_key):
+    """Tests for passing confusion matrix keys as optional."""
     confusion_matrix_params[cm_key] = {}
     viz_params["confusion_matrix_dict"] = confusion_matrix_params
-    expected_error_msg = f"{cm_key} is not optional. Received value: {confusion_matrix_params[cm_key]}"
+    expected_error_msg = f"{cm_key} is not optional. " \
+                         f"Received value: {confusion_matrix_params[cm_key]}"
     with pytest.raises(ValueError, match=expected_error_msg):
         generate_visualization(viz_params)
 
@@ -246,8 +288,10 @@ def test_confusion_matrix_optional_check(
     ["actuals", "preds", "classes", "url"],
 )
 def test_confusion_matrix_missing_check(
-    viz_params, confusion_matrix_params, cm_key
-):
+        viz_params,
+        confusion_matrix_params,  #pylint: disable=redefined-outer-name
+        cm_key):
+    """Tests for missing confusion matrix keys."""
     del confusion_matrix_params[cm_key]
     viz_params["confusion_matrix_dict"] = confusion_matrix_params
     expected_error_msg = f"Missing mandatory key - {cm_key}"
@@ -255,7 +299,8 @@ def test_confusion_matrix_missing_check(
         generate_visualization(viz_params)
 
 
-def test_confusion_matrix_success(viz_params, confusion_matrix_params):
+def test_confusion_matrix_success(viz_params, confusion_matrix_params):  #pylint: disable=redefined-outer-name
+    """Test for successful confusion matrix generation."""
     if os.path.exists(viz_params["mlpipeline_ui_metadata"]):
         os.remove(viz_params["mlpipeline_ui_metadata"])
     viz_params["confusion_matrix_dict"] = confusion_matrix_params
@@ -265,6 +310,6 @@ def test_confusion_matrix_success(viz_params, confusion_matrix_params):
     assert output_dict is not None
     assert "mlpipeline_ui_metadata" in output_dict
     assert os.path.exists(output_dict["mlpipeline_ui_metadata"])
-    with open(output_dict["mlpipeline_ui_metadata"]) as fp:
+    with open(output_dict["mlpipeline_ui_metadata"]) as fp:  #pylint: disable=invalid-name
         data = fp.read()
     assert "confusion_matrix" in data

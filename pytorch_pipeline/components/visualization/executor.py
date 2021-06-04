@@ -253,7 +253,8 @@ class Executor(BaseExecutor):  # pylint: disable=R0903
 
         if not (confusion_matrix_dict or test_accuracy or markdown):
             raise ValueError(
-                "Any one of these keys should be set - confusion_matrix_dict, test_accuracy, markdown"
+                "Any one of these keys should be set - "
+                "confusion_matrix_dict, test_accuracy, markdown"
             )
 
         if confusion_matrix_dict:

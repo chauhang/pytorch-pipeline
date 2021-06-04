@@ -70,6 +70,7 @@ class Visualization(BaseComponent):  # pylint: disable=R0903
     def _validate_markdown_spec(
         self, spec: standard_component_specs, markdown_dict: dict
     ):
+        """Vaildates markdown specs type"""
         for key in spec.MARKDOWN_DICT:
             if key not in markdown_dict:
                 raise ValueError(f"Missing mandatory key - {key}")
@@ -83,6 +84,7 @@ class Visualization(BaseComponent):  # pylint: disable=R0903
     def _validate_confusion_matrix_spec(
         self, spec: standard_component_specs, confusion_matrix_dict: dict
     ):
+        """Validates confusion matrix specs type"""
         for key in spec.CONFUSION_MATRIX_DICT:
             if key not in confusion_matrix_dict:
                 raise ValueError(f"Missing mandatory key - {key}")
