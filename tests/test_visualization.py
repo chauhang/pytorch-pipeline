@@ -21,16 +21,16 @@ def viz_params():
     """Setting visualization parameters.
 
     Returns:
-        VIZ_PARAMS : dict of visualization parameters.
+        viz_param : dict of visualization parameters.
     """
-    MARKDOWN_PARAMS = {  #pylint: disable=invalid-name
+    markdown_params = {
         "storage": "dummy-storage",
         "source": {
             "dummy_key": "dummy_value"
         },
     }
 
-    VIZ_PARAMS = {  #pylint: disable=invalid-name
+    viz_param = {
         "mlpipeline_ui_metadata":
         os.path.join(metdata_dir, "mlpipeline_ui_metadata.json"),
         "mlpipeline_metrics":
@@ -39,9 +39,9 @@ def viz_params():
         "test_accuracy":
         99.05,
         "markdown":
-        MARKDOWN_PARAMS,
+        markdown_params,
     }
-    return VIZ_PARAMS
+    return viz_param
 
 
 @pytest.fixture(scope="class")
@@ -49,15 +49,15 @@ def confusion_matrix_params():
     """Setting the confusion matrix parameters.
 
     Returns:
-        CONFUSION_MATRIX_PARAMS : Dict of confusion matrix parmas
+        confusion_matrix_params : Dict of confusion matrix parmas
     """
-    CONFUSION_MATRIX_PARAMS = {  #pylint: disable=invalid-name
+    confusion_matrix_param = {
         "actuals": ["1", "2", "3", "4"],
         "preds": ["2", "3", "4", "0"],
         "classes": ["dummy", "dummy"],
         "url": "minio://dummy_bucket/folder_name",
     }
-    return CONFUSION_MATRIX_PARAMS
+    return confusion_matrix_param
 
 
 def generate_visualization(viz_params: dict):  #pylint: disable=redefined-outer-name
@@ -169,8 +169,8 @@ def test_accuracy_metric(viz_params):  #pylint: disable=redefined-outer-name
     assert output_dict is not None
     metadata_metric_file = viz_params["mlpipeline_metrics"]
     assert os.path.exists(metadata_metric_file)
-    with open(metadata_metric_file) as fp:  #pylint: disable=invalid-name
-        data = json.load(fp)
+    with open(metadata_metric_file) as file:
+        data = json.load(file)
     assert data["metrics"][0]["numberValue"] == viz_params["test_accuracy"]
 
 
@@ -215,8 +215,8 @@ def test_markdown_success(viz_params):  #pylint: disable=redefined-outer-name
     assert output_dict is not None
     assert "mlpipeline_ui_metadata" in output_dict
     assert os.path.exists(output_dict["mlpipeline_ui_metadata"])
-    with open(output_dict["mlpipeline_ui_metadata"]) as fp:  #pylint: disable=invalid-name
-        data = fp.read()
+    with open(output_dict["mlpipeline_ui_metadata"]) as file:
+        data = file.read()
     assert "dummy_key" in data
     assert "dummy_value" in data
 
@@ -228,8 +228,8 @@ def test_different_storage_value(viz_params):  #pylint: disable=redefined-outer-
     assert output_dict is not None
     assert "mlpipeline_ui_metadata" in output_dict
     assert os.path.exists(output_dict["mlpipeline_ui_metadata"])
-    with open(output_dict["mlpipeline_ui_metadata"]) as fp:  #pylint: disable=invalid-name
-        data = fp.read()
+    with open(output_dict["mlpipeline_ui_metadata"]) as file:
+        data = file.read()
     assert "inline" in data
 
 
@@ -246,8 +246,8 @@ def test_multiple_metadata_appends(viz_params):  #pylint: disable=redefined-oute
     assert output_dict is not None
     assert "mlpipeline_ui_metadata" in output_dict
     assert os.path.exists(output_dict["mlpipeline_ui_metadata"])
-    with open(output_dict["mlpipeline_ui_metadata"]) as fp:  #pylint: disable=invalid-name
-        data = json.load(fp)
+    with open(output_dict["mlpipeline_ui_metadata"]) as file:
+        data = json.load(file)
     assert len(data["outputs"]) == 3
 
 
@@ -256,7 +256,7 @@ def test_multiple_metadata_appends(viz_params):  #pylint: disable=redefined-oute
     ["actuals", "preds", "classes", "url"],
 )
 def test_confusion_matrix_invalid_types(
-        viz_params,
+        viz_params,  #pylint: disable=redefined-outer-name
         confusion_matrix_params,  #pylint: disable=redefined-outer-name
         cm_key):
     """Test for invalid type keys for confusion matrix."""
@@ -271,7 +271,7 @@ def test_confusion_matrix_invalid_types(
     ["actuals", "preds", "classes", "url"],
 )
 def test_confusion_matrix_optional_check(
-        viz_params,
+        viz_params,  #pylint: disable=redefined-outer-name
         confusion_matrix_params,  #pylint: disable=redefined-outer-name
         cm_key):
     """Tests for passing confusion matrix keys as optional."""
@@ -288,7 +288,7 @@ def test_confusion_matrix_optional_check(
     ["actuals", "preds", "classes", "url"],
 )
 def test_confusion_matrix_missing_check(
-        viz_params,
+        viz_params,  #pylint: disable=redefined-outer-name
         confusion_matrix_params,  #pylint: disable=redefined-outer-name
         cm_key):
     """Tests for missing confusion matrix keys."""
@@ -310,6 +310,6 @@ def test_confusion_matrix_success(viz_params, confusion_matrix_params):  #pylint
     assert output_dict is not None
     assert "mlpipeline_ui_metadata" in output_dict
     assert os.path.exists(output_dict["mlpipeline_ui_metadata"])
-    with open(output_dict["mlpipeline_ui_metadata"]) as fp:  #pylint: disable=invalid-name
-        data = fp.read()
+    with open(output_dict["mlpipeline_ui_metadata"]) as file:
+        data = file.read()
     assert "confusion_matrix" in data
