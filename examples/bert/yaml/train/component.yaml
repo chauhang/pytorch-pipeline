@@ -6,6 +6,8 @@ inputs:
   - {name: profiler}
   - {name: confusion_matrix_url}
   - {name: num_samples, default: 1000}
+  - {name: gpus, type: Integer, default: 0}
+  - {name: accelerator, type: String, default: 'None'}
 
 outputs:
   - {name: tensorboard_root}
@@ -33,3 +35,7 @@ implementation:
       - { inputValue: confusion_matrix_url}
       - --num_samples
       - { inputValue: num_samples}
+      - --gpus
+      - { inputValue: gpus}
+      - --accelerator
+      - { inputValue: accelerator}

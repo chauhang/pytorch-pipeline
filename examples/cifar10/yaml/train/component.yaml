@@ -6,6 +6,8 @@ inputs:
   - {name: input_data}
   - {name: profiler}
   - {name: confusion_matrix_url}
+  - {name: gpus, type: Integer, default: 0}
+  - {name: accelerator, type: String, default: 'None'}
 
 outputs:
   - {name: tensorboard_root}
@@ -33,3 +35,7 @@ implementation:
     - { outputPath: MLPipeline Metrics}
     - --confusion_matrix_url
     - { inputValue: confusion_matrix_url}
+    - --gpus
+    - { inputValue: gpus}
+    - --accelerator
+    - { inputValue: accelerator}
