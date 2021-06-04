@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
 import os
 from pytorch_pipeline.components.trainer.component import Trainer
-from pytorch_pipeline.components.mar.mar_generation import MarGeneration
+from pytorch_pipeline.components.mar.component import MarGeneration
 from argparse import ArgumentParser
 from pathlib import Path
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -136,7 +136,7 @@ if trainer.ptl_trainer.global_rank == 0:
         "EXTRA_FILES": "examples/bert/bert-base-uncased-vocab.txt,examples/bert/index_to_name.json,examples/bert/wrapper.py",
     }
 
-    MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
+    MarGeneration(mar_config=mar_config, mar_save_path=args["checkpoint_dir"])
 
     classes = [
         "World",

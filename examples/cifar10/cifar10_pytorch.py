@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
 import os
 from pytorch_pipeline.components.trainer.component import Trainer
-from pytorch_pipeline.components.mar.mar_generation import MarGeneration
+from pytorch_pipeline.components.mar.component import MarGeneration
 from pathlib import Path
 from argparse import ArgumentParser
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -136,7 +136,7 @@ if trainer.ptl_trainer.global_rank == 0:
         "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties",
     }
 
-    MarGeneration(mar_config=mar_config).generate_mar_file(mar_save_path=args["checkpoint_dir"])
+    MarGeneration(mar_config=mar_config, mar_save_path=args["checkpoint_dir"])
 
     classes = [
         "airplane",
@@ -199,4 +199,3 @@ if trainer.ptl_trainer.global_rank == 0:
 
     checpoint_dir_contents = os.listdir(args["checkpoint_dir"])
     print(f"Checkpoint Directory Contents: {checpoint_dir_contents}")
-
