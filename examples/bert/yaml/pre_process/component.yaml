@@ -8,7 +8,9 @@ outputs:
  
 implementation:
   container:
-    image: public.ecr.aws/y1x1p2u5/pytorch_pipeline:21052021_v1.0
+    # For GPU use
+    # image: public.ecr.aws/y1x1p2u5/pytorch_kfp_components:v1.1-gpu
+    image: public.ecr.aws/y1x1p2u5/pytorch_kfp_components:v1.1
     command: ["python3", "examples/bert/bert_pre_process.py"] 
     args:
     - --output_path
