@@ -32,7 +32,8 @@ class Visualization(BaseComponent):  # pylint: disable=R0903
         super(BaseComponent, self).__init__()  # pylint: disable=E1003
 
         input_dict = {
-            standard_component_specs.VIZ_CONFUSION_MATRIX_DICT: confusion_matrix_dict,
+            standard_component_specs.VIZ_CONFUSION_MATRIX_DICT:
+                confusion_matrix_dict,
             standard_component_specs.VIZ_TEST_ACCURACY: test_accuracy,
             standard_component_specs.VIZ_MARKDOWN: markdown,
         }
@@ -40,8 +41,10 @@ class Visualization(BaseComponent):  # pylint: disable=R0903
         output_dict = {}
 
         exec_properties = {
-            standard_component_specs.VIZ_MLPIPELINE_UI_METADATA: mlpipeline_ui_metadata,
-            standard_component_specs.VIZ_MLPIPELINE_METRICS: mlpipeline_metrics,
+            standard_component_specs.VIZ_MLPIPELINE_UI_METADATA:
+                mlpipeline_ui_metadata,
+            standard_component_specs.VIZ_MLPIPELINE_METRICS:
+                mlpipeline_metrics,
         }
 
         spec = standard_component_specs.VisualizationSpec()
