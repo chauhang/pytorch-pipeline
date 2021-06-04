@@ -10,10 +10,10 @@ import os
 from argparse import Namespace
 import pytorch_lightning as pl
 import torch
-from pytorch_pipeline.components.trainer.generic_executor import (
+from pytorch_kfp_components.components.trainer.generic_executor import (
     GenericExecutor,
 )
-from pytorch_pipeline.types import standard_component_specs
+from pytorch_kfp_components.types import standard_component_specs
 
 
 class Executor(GenericExecutor):
@@ -99,8 +99,9 @@ class Executor(GenericExecutor):
                 model_name = "model_state_dict.pth"
 
             model_save_path = os.path.join(model_save_path, model_name)
-            print("Saving model to {}".format(model_save_path))
-            torch.save(model.state_dict(), model_save_path)
+            if trainer.global_rank == 0:
+                print("Saving model to {}".format(model_save_path))
+                torch.save(model.state_dict(), model_save_path)
 
             output_dict[standard_component_specs.TRAINER_MODEL_SAVE_PATH
                        ] = model_save_path

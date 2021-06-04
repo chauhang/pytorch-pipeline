@@ -15,9 +15,9 @@ from urllib.parse import urlparse
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 
-from pytorch_pipeline.components.base.base_executor import BaseExecutor
-from pytorch_pipeline.components.minio.component import MinIO
-from pytorch_pipeline.types import standard_component_specs
+from pytorch_kfp_components.components.base.base_executor import BaseExecutor
+from pytorch_kfp_components.components.minio.component import MinIO
+from pytorch_kfp_components.types import standard_component_specs
 
 
 class Executor(BaseExecutor):  # pylint: disable=R0903

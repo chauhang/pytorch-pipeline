@@ -6,7 +6,7 @@
 # LICENSE file in the root directory of this source tree.
 """Pipeline Base component class."""
 import abc
-from pytorch_pipeline.types import standard_component_specs
+from pytorch_kfp_components.types import standard_component_specs
 from six import with_metaclass
 
 

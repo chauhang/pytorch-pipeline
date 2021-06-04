@@ -9,8 +9,8 @@ import json
 import tempfile
 from unittest.mock import patch
 import mock
-from pytorch_pipeline.components.visualization.component import Visualization
-from pytorch_pipeline.components.visualization.executor import Executor
+from pytorch_kfp_components.components.visualization.component import Visualization
+from pytorch_kfp_components.components.visualization.executor import Executor
 import pytest
 
 metdata_dir = tempfile.mkdtemp()

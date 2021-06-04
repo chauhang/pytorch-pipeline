@@ -3,8 +3,8 @@ from argparse import ArgumentParser
 
 import pytorch_lightning as pl
 
-from pytorch_pipeline.components.trainer.component import Trainer
-from pytorch_pipeline.components.mar.component import MarGeneration
+from pytorch_kfp_components.components.trainer.component import Trainer
+from pytorch_kfp_components.components.mar.component import MarGeneration
 
 # Argument parser for user defined paths
 parser = ArgumentParser()

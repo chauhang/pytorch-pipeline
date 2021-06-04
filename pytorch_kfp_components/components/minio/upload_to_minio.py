@@ -1,7 +1,7 @@
 import os
 from argparse import ArgumentParser
-from pytorch_pipeline.components.minio.component import MinIO
-from pytorch_pipeline.components.visualization.component import Visualization
+from pytorch_kfp_components.components.minio.component import MinIO
+from pytorch_kfp_components.components.visualization.component import Visualization
 
 # Argument parser for user defined paths
 parser = ArgumentParser()
