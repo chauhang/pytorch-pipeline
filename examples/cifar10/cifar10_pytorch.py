@@ -12,7 +12,6 @@ from pytorch_lightning.callbacks import (
 )
 from pytorch_kfp_components.components.visualization.component import Visualization
 
-
 # Argument parser for user defined paths
 parser = ArgumentParser()
 
@@ -72,11 +71,9 @@ parser.add_argument(
     help="Pod template spec",
 )
 
-
 parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
 args = vars(parser.parse_args())
-
 
 # Enabling Tensorboard Logger, ModelCheckpoint, Earlystopping
 
@@ -95,13 +92,15 @@ checkpoint_callback = ModelCheckpoint(
 if not args["max_epochs"]:
     args["max_epochs"] = 1
 
+if args["accelerator"] and args["accelerator"] == "None":
+    args["accelerator"] = None
+
 # Setting the trainer specific arguments
 trainer_args = {
     "logger": tboard,
     "checkpoint_callback": True,
     "callbacks": [lr_logger, early_stopping, checkpoint_callback],
 }
-
 
 if "profiler" in args and args["profiler"] != "":
     trainer_args["profiler"] = args["profiler"]
@@ -122,80 +121,81 @@ trainer = Trainer(
     trainer_args=trainer_args,
 )
 
+model = trainer.ptl_trainer.get_model()
 
-# Mar file generation
+if trainer.ptl_trainer.global_rank == 0:
+    # Mar file generation
 
-mar_config = {
-    "MODEL_NAME": "cifar10_test",
-    "MODEL_FILE": "examples/cifar10/cifar10_train.py",
-    "HANDLER": "image_classifier",
-    "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
-    "VERSION": "1",
-    "EXPORT_PATH": args["checkpoint_dir"],
-    "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties",
-}
+    mar_config = {
+        "MODEL_NAME": "cifar10_test",
+        "MODEL_FILE": "examples/cifar10/cifar10_train.py",
+        "HANDLER": "image_classifier",
+        "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
+        "VERSION": "1",
+        "EXPORT_PATH": args["checkpoint_dir"],
+        "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/config.properties",
+    }
 
+    MarGeneration(mar_config=mar_config, mar_save_path=args["checkpoint_dir"])
 
-MarGeneration(mar_config=mar_config, mar_save_path=args["checkpoint_dir"])
+    classes = [
+        "airplane",
+        "automobile",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck",
+    ]
 
-classes = [
-    "airplane",
-    "automobile",
-    "bird",
-    "cat",
-    "deer",
-    "dog",
-    "frog",
-    "horse",
-    "ship",
-    "truck",
-]
+    # print(dir(trainer.ptl_trainer.model.module))
+    # model = trainer.ptl_trainer.model
 
-model = trainer.ptl_trainer.model
+    target_index_list = list(set(model.target))
 
-target_index_list = list(set(model.target))
+    class_list = []
+    for index in target_index_list:
+        class_list.append(classes[index])
 
-class_list = []
-for index in target_index_list:
-    class_list.append(classes[index])
+    confusion_matrix_dict = {
+        "actuals": model.target,
+        "preds": model.preds,
+        "classes": class_list,
+        "url": args["confusion_matrix_url"],
+    }
 
+    test_accuracy = round(float(model.test_acc.compute()), 2)
 
-confusion_matrix_dict = {
-    "actuals": model.target,
-    "preds": model.preds,
-    "classes": class_list,
-    "url": args["confusion_matrix_url"],
-}
+    print("Model test accuracy: ", test_accuracy)
 
-test_accuracy = round(float(model.test_acc.compute()), 2)
+    visualization_arguments = {
+        "input": {
+            "tensorboard_root": args["tensorboard_root"],
+            "checkpoint_dir": args["checkpoint_dir"],
+            "dataset_path": args["dataset_path"],
+            "model_name": args["model_name"],
+            "confusion_matrix_url": args["confusion_matrix_url"],
+        },
+        "output": {
+            "mlpipeline_ui_metadata": args["mlpipeline_ui_metadata"],
+            "mlpipeline_metrics": args["mlpipeline_metrics"],
+        },
+    }
 
-print("Model test accuracy: ", test_accuracy)
+    markdown_dict = {"storage": "inline", "source": visualization_arguments}
 
-visualization_arguments = {
-    "input": {
-        "tensorboard_root": args["tensorboard_root"],
-        "checkpoint_dir": args["checkpoint_dir"],
-        "dataset_path": args["dataset_path"],
-        "model_name": args["model_name"],
-        "confusion_matrix_url": args["confusion_matrix_url"],
-    },
-    "output": {
-        "mlpipeline_ui_metadata": args["mlpipeline_ui_metadata"],
-        "mlpipeline_metrics": args["mlpipeline_metrics"],
-    },
-}
+    print("Visualization Arguments: ", markdown_dict)
 
-markdown_dict = {"storage": "inline", "source": visualization_arguments}
+    visualization = Visualization(
+        test_accuracy=test_accuracy,
+        confusion_matrix_dict=confusion_matrix_dict,
+        mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
+        mlpipeline_metrics=args["mlpipeline_metrics"],
+        markdown=markdown_dict,
+    )
 
-print("Visualization Arguments: ", markdown_dict)
-
-visualization = Visualization(
-    test_accuracy=test_accuracy,
-    confusion_matrix_dict=confusion_matrix_dict,
-    mlpipeline_ui_metadata=args["mlpipeline_ui_metadata"],
-    mlpipeline_metrics=args["mlpipeline_metrics"],
-    markdown=markdown_dict,
-)
-
-checpoint_dir_contents = os.listdir(args["checkpoint_dir"])
-print(f"Checkpoint Directory Contents: {checpoint_dir_contents}")
+    checpoint_dir_contents = os.listdir(args["checkpoint_dir"])
+    print(f"Checkpoint Directory Contents: {checpoint_dir_contents}")
