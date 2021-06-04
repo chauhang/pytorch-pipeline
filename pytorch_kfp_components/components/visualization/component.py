@@ -1,37 +1,99 @@
-import os
-from pathlib import Path
+#!/usr/bin/env/python3
+# Copyright (c) Facebook, Inc. and its affiliates.
+# All rights reserved.
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree.
+"""Visualization Component Class."""
+from pytorch_kfp_components.types import standard_component_specs
 from pytorch_kfp_components.components.base.base_component import BaseComponent
-from pytorch_kfp_components.components.visualization.Executor import Executor
+from pytorch_kfp_components.components.visualization.executor import Executor
 
 
-class Visualization(BaseComponent):
-    def __init__(
+class Visualization(BaseComponent):  # pylint: disable=R0903
+    """Visualization Component Class."""
+
+    def __init__(  # pylint: disable=R0913
         self,
         mlpipeline_ui_metadata=None,
         mlpipeline_metrics=None,
-        pod_template_spec=None,
         confusion_matrix_dict=None,
         test_accuracy=None,
         markdown=None,
     ):
-        super(BaseComponent, self).__init__()
+        """Initializes the Visualization component.
 
-        if mlpipeline_ui_metadata:
-            Path(os.path.dirname(mlpipeline_ui_metadata)).mkdir(parents=True, exist_ok=True)
-        else:
-            mlpipeline_ui_metadata = "/mlpipeline-ui-metadata.json"
+        Args:
+            mlpipeline_ui_metadata : path to save ui metadata
+            mlpipeline_metrics : metrics to be uploaded
+            confusion_metrics_dict : dict for the confusion metrics
+            test_accuracy : test accuracy of the model
+            markdown : markdown dictionary
+        """
+        super(BaseComponent, self).__init__()  # pylint: disable=E1003
 
-        if mlpipeline_metrics:
-            Path(os.path.dirname(mlpipeline_metrics)).mkdir(parents=True, exist_ok=True)
-        else:
-            mlpipeline_metrics = "/mlpipeline-metrics.json"
+        input_dict = {
+            standard_component_specs.VIZ_CONFUSION_MATRIX_DICT:
+                confusion_matrix_dict,
+            standard_component_specs.VIZ_TEST_ACCURACY: test_accuracy,
+            standard_component_specs.VIZ_MARKDOWN: markdown,
+        }
 
-        Executor(
-            mlpipeline_ui_metadata=mlpipeline_ui_metadata,
-            mlpipeline_metrics=mlpipeline_metrics,
-            pod_template_spec=pod_template_spec,
-        ).Do(
-            confusion_matrix_dict=confusion_matrix_dict,
-            test_accuracy=test_accuracy,
-            markdown=markdown,
+        output_dict = {}
+
+        exec_properties = {
+            standard_component_specs.VIZ_MLPIPELINE_UI_METADATA:
+                mlpipeline_ui_metadata,
+            standard_component_specs.VIZ_MLPIPELINE_METRICS:
+                mlpipeline_metrics,
+        }
+
+        spec = standard_component_specs.VisualizationSpec()
+        self._validate_spec(
+            spec=spec,
+            input_dict=input_dict,
+            output_dict=output_dict,
+            exec_properties=exec_properties,
         )
+        if markdown:
+            self._validate_markdown_spec(spec=spec, markdown_dict=markdown)
+
+        if confusion_matrix_dict:
+            self._validate_confusion_matrix_spec(
+                spec=spec, confusion_matrix_dict=confusion_matrix_dict
+            )
+
+        Executor().Do(
+            input_dict=input_dict,
+            output_dict=output_dict,
+            exec_properties=exec_properties,
+        )
+
+        self.output_dict = output_dict
+
+    def _validate_markdown_spec(
+        self, spec: standard_component_specs, markdown_dict: dict
+    ):
+        """Vaildates markdown specs type"""
+        for key in spec.MARKDOWN_DICT:
+            if key not in markdown_dict:
+                raise ValueError(f"Missing mandatory key - {key}")
+            if key in markdown_dict:
+                self._type_check(
+                    actual_value=markdown_dict[key],
+                    key=key,
+                    spec_dict=spec.MARKDOWN_DICT,
+                )
+
+    def _validate_confusion_matrix_spec(
+        self, spec: standard_component_specs, confusion_matrix_dict: dict
+    ):
+        """Validates confusion matrix specs type"""
+        for key in spec.CONFUSION_MATRIX_DICT:
+            if key not in confusion_matrix_dict:
+                raise ValueError(f"Missing mandatory key - {key}")
+            if key in confusion_matrix_dict:
+                self._type_check(
+                    actual_value=confusion_matrix_dict[key],
+                    key=key,
+                    spec_dict=spec.CONFUSION_MATRIX_DICT,
+                )

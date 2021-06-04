@@ -21,6 +21,19 @@ MAR_GENERATION_CONFIG = "mar_config"
 MAR_GENERATION_SAVE_PATH = "mar_save_path"
 CONFIG_PROPERTIES_SAVE_PATH = "config_prop_save_path"
 
+VIZ_MLPIPELINE_UI_METADATA = "mlpipeline_ui_metadata"
+VIZ_MLPIPELINE_METRICS = "mlpipeline_metrics"
+VIZ_CONFUSION_MATRIX_DICT = "confusion_matrix_dict"
+VIZ_TEST_ACCURACY = "test_accuracy"
+
+VIZ_MARKDOWN = "markdown"
+VIZ_MARKDOWN_DICT_SOURCE = "source"
+VIZ_MARKDOWN_DICT_STORAGE = "storage"
+
+VIZ_CONFUSION_MATRIX_ACTUALS = "actuals"
+VIZ_CONFUSION_MATRIX_PREDS = "preds"
+VIZ_CONFUSION_MATRIX_CLASSES = "classes"
+VIZ_CONFUSION_MATRIX_URL = "url"
 
 class Parameters:  # pylint: disable=R0903
     """Parameter class to match the desired type."""
@@ -32,7 +45,6 @@ class Parameters:  # pylint: disable=R0903
 
 class TrainerSpec:  # pylint: disable=R0903
     """Trainer Specification class.
-
     For validating the parameter 'type' .
     """
 
@@ -51,8 +63,7 @@ class TrainerSpec:  # pylint: disable=R0903
 
 
 class MarGenerationSpec:  # pylint: disable=R0903
-    """Trainer Specification class.
-
+    """Mar Specification class.
     For validating the parameter 'type' .
     """
 
@@ -64,4 +75,33 @@ class MarGenerationSpec:  # pylint: disable=R0903
 
     EXECUTION_PROPERTIES = {
         MAR_GENERATION_SAVE_PATH: Parameters(type=str, optional=True),
+    }
+
+class VisualizationSpec:
+    """Visualization Specification class.
+    For validating the parameter 'type'
+    """
+    INPUT_DICT = {
+        VIZ_CONFUSION_MATRIX_DICT: Parameters(type=dict, optional=True),
+        VIZ_TEST_ACCURACY: Parameters(type=float, optional=True),
+        VIZ_MARKDOWN: Parameters(type=dict, optional=True),
+    }
+
+    OUTPUT_DICT = {}
+
+    EXECUTION_PROPERTIES = {
+        VIZ_MLPIPELINE_UI_METADATA: Parameters(type=str, optional=True),
+        VIZ_MLPIPELINE_METRICS: Parameters(type=str, optional=True),
+    }
+
+    MARKDOWN_DICT = {
+        VIZ_MARKDOWN_DICT_STORAGE: Parameters(type=str, optional=False),
+        VIZ_MARKDOWN_DICT_SOURCE: Parameters(type=dict, optional=False),
+    }
+
+    CONFUSION_MATRIX_DICT = {
+        VIZ_CONFUSION_MATRIX_ACTUALS: Parameters(type=list, optional=False),
+        VIZ_CONFUSION_MATRIX_PREDS: Parameters(type=list, optional=False),
+        VIZ_CONFUSION_MATRIX_CLASSES: Parameters(type=list, optional=False),
+        VIZ_CONFUSION_MATRIX_URL: Parameters(type=str, optional=False),
     }
