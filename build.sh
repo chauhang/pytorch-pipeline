@@ -15,7 +15,7 @@ export images_tag=$(cat curr_time.txt)
 echo ++++ Building component images with tag=$images_tag
 
 
-full_image_name=$2/pytorch_pipeline:$images_tag
+full_image_name=$2/pytorch_kfp_components:$images_tag
 
 echo IMAGE TO BUILD: $full_image_name
 
@@ -23,7 +23,7 @@ export full_image_name=$full_image_name
 
 
 ## build and push docker - to fetch the latest changes and install dependencies
-# cd pytorch_pipeline
+# cd pytorch_kfp_components
 
 docker build --no-cache -t $full_image_name .
 docker push $full_image_name

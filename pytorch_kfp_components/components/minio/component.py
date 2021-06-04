@@ -1,6 +1,6 @@
 import os
-from pytorch_pipeline.components.base.base_component import BaseComponent
-from pytorch_pipeline.components.minio.executor import Executor
+from pytorch_kfp_components.components.base.base_component import BaseComponent
+from pytorch_kfp_components.components.minio.executor import Executor
 from minio import Minio
 
 

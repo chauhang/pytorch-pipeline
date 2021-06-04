@@ -7,8 +7,8 @@
 """Generic Executor Class."""
 import importlib
 import inspect
-from pytorch_pipeline.components.base.base_executor import BaseExecutor
-from pytorch_pipeline.types import standard_component_specs
+from pytorch_kfp_components.components.base.base_executor import BaseExecutor
+from pytorch_kfp_components.types import standard_component_specs
 
 
 class GenericExecutor(BaseExecutor):

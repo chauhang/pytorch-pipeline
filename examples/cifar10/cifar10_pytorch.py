@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
 import os
-from pytorch_pipeline.components.trainer.component import Trainer
-from pytorch_pipeline.components.mar.component import MarGeneration
+from pytorch_kfp_components.components.trainer.component import Trainer
+from pytorch_kfp_components.components.mar.component import MarGeneration
 from pathlib import Path
 from argparse import ArgumentParser
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -10,7 +10,7 @@ from pytorch_lightning.callbacks import (
     LearningRateMonitor,
     ModelCheckpoint,
 )
-from pytorch_pipeline.components.visualization.component import Visualization
+from pytorch_kfp_components.components.visualization.component import Visualization
 
 # Argument parser for user defined paths
 parser = ArgumentParser()

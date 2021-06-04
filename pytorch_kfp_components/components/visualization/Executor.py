@@ -6,8 +6,8 @@ import boto3
 from io import StringIO
 from urllib.parse import urlparse
 from sklearn.metrics import confusion_matrix
-from pytorch_pipeline.components.base.base_executor import BaseExecutor
-from pytorch_pipeline.components.minio.component import MinIO
+from pytorch_kfp_components.components.base.base_executor import BaseExecutor
+from pytorch_kfp_components.components.minio.component import MinIO
 
 
 class Executor(BaseExecutor):

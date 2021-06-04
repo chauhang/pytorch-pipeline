@@ -6,7 +6,7 @@ import torchvision
 import webdataset as wds
 from sklearn.model_selection import train_test_split
 from argparse import ArgumentParser
-from pytorch_pipeline.components.visualization.component import Visualization
+from pytorch_kfp_components.components.visualization.component import Visualization
 
 if __name__ == "__main__":
     parser = ArgumentParser()

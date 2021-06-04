@@ -6,7 +6,7 @@ from pathlib import Path
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
 from torchtext.utils import download_from_url, extract_archive
-from pytorch_pipeline.components.visualization.component import Visualization
+from pytorch_kfp_components.components.visualization.component import Visualization
 
 if __name__ == "__main__":
 
