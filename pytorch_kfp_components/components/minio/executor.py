@@ -1,5 +1,5 @@
 import os
-from pytorch_pipeline.components.base.base_executor import BaseExecutor
+from pytorch_kfp_components.components.base.base_executor import BaseExecutor
 
 
 class Executor(BaseExecutor):

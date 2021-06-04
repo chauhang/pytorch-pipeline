@@ -10,10 +10,10 @@ import os
 from argparse import Namespace
 import pytorch_lightning as pl
 import torch
-from pytorch_pipeline.components.trainer.generic_executor import (
+from pytorch_kfp_components.components.trainer.generic_executor import (
     GenericExecutor,
 )
-from pytorch_pipeline.types import standard_component_specs
+from pytorch_kfp_components.types import standard_component_specs
 
 
 class Executor(GenericExecutor):

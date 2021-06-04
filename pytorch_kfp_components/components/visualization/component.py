@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
-from pytorch_pipeline.components.base.base_component import BaseComponent
-from pytorch_pipeline.components.visualization.Executor import Executor
+from pytorch_kfp_components.components.base.base_component import BaseComponent
+from pytorch_kfp_components.components.visualization.Executor import Executor
 
 
 class Visualization(BaseComponent):
