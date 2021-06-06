@@ -132,6 +132,16 @@ def test_mar_generation_mandatory_params_missing(mar_config, mandatory_key):
         MarGeneration(mar_config=mar_config, mar_save_path=tmp_dir)
 
 
+@pytest.mark.parametrize("key", [
+    "MODEL_NAME", "SERIALIZED_FILE", "MODEL_FILE", "HANDLER",
+    "REQUIREMENTS_FILE", "EXTRA_FILES"
+])
+def test_mar_invalid_path(mar_config, key):
+    mar_config[key] = "dummy"
+    with pytest.raises(RuntimeError):
+        MarGeneration(mar_config=mar_config)
+
+
 def test_mar_generation_success(mar_config):
     """Test for successful mar generation."""
     with open(os.path.join(EXPORT_PATH, "iris.pt"), "w") as fp:
