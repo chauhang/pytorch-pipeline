@@ -122,7 +122,6 @@ def test_mar_generation_mandatory_params_missing(mar_config, mandatory_key):
     Raises:
         Exception : when mandatory keys are missing.
     """
-    mar_config[mandatory_key] = ""
     mar_config.pop(mandatory_key)
 
     tmp_dir = tempfile.mkdtemp()

@@ -39,9 +39,21 @@ class MarGeneration(BaseComponent):  #pylint: disable=R0903
             exec_properties=exec_properties,
         )
 
+        self._validate_mar_config_spec(spec=spec, mar_config=mar_config)
+
         Executor().Do(
             input_dict=input_dict,
             output_dict=output_dict,
             exec_properties=exec_properties,
         )
         self.output_dict = output_dict
+
+    def _validate_mar_config_spec(self, spec: standard_component_specs,
+                                  mar_config: dict):
+        """Validates mar config dictionary specs type"""
+        for key in mar_config:
+            self._type_check(
+                actual_value=mar_config[key],
+                key=key.lower(),
+                spec_dict=spec.MAR_CONFIG_DICT,
+            )
