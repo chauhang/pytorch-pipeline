@@ -7,9 +7,9 @@ class MinIO(BaseComponent):
     def __init__(
         self,
         source: str,
-        bucket_name,
-        destination,
-        endpoint=None,
+        bucket_name: str,
+        destination: str,
+        endpoint: str,
     ):
         super(BaseComponent, self).__init__()
 
@@ -40,5 +40,3 @@ class MinIO(BaseComponent):
         )
 
         self.output_dict = output_dict
-
-        print(output_dict)

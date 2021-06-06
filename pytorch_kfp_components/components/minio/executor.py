@@ -25,13 +25,13 @@ class Executor(BaseExecutor):
         if "MINIO_ACCESS_KEY" not in os.environ:
             raise ValueError("Environment variable MINIO_ACCESS_KEY not found")
 
-        if "SECRET_KEY" not in os.environ:
-            raise ValueError("Environment variable SECRET_KEY not found")
+        if "MINIO_SECRET_KEY" not in os.environ:
+            raise ValueError("Environment variable MINIO_SECRET_KEY not found")
 
         minio_config = {
             "HOST": endpoint,
             "ACCESS_KEY": os.environ["MINIO_ACCESS_KEY"],
-            "SECRET_KEY": os.environ["SECRET_KEY"],
+            "SECRET_KEY": os.environ["MINIO_SECRET_KEY"],
         }
 
         return minio_config
@@ -71,6 +71,8 @@ class Executor(BaseExecutor):
             print(str(e))
             raise Exception(e)
 
+        return output_dict
+
     def get_fn_args(self, input_dict: dict, exec_properties: dict):
         source = input_dict.get(standard_component_specs.MINIO_SOURCE)
         bucket_name = input_dict.get(standard_component_specs.MINIO_BUCKET_NAME)
@@ -89,7 +91,7 @@ class Executor(BaseExecutor):
         client = self._initiate_minio_client(minio_config=minio_config)
 
         if not os.path.exists(source):
-            raise Exception("Input path - {} does not exists".format(source))
+            raise ValueError("Input path - {} does not exists".format(source))
 
         if os.path.isfile(source):
             artifact_name = source.split("/")[-1]
