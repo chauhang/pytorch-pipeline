@@ -138,7 +138,7 @@ def test_mar_generation_mandatory_params_missing(mar_config, mandatory_key):
 ])
 def test_mar_invalid_path(mar_config, key):
     mar_config[key] = "dummy"
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         MarGeneration(mar_config=mar_config)
 
 

@@ -146,7 +146,7 @@ class Executor(BaseExecutor):
                              stderr=subprocess.PIPE)
         out, err = p.communicate()
         if err:
-            raise RuntimeError(err)
+            raise ValueError(err)
 
         # If user has provided the export path
         # By default, torch-model-archiver
