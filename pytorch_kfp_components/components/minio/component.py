@@ -9,7 +9,6 @@ class MinIO(BaseComponent):
         source: str,
         bucket_name,
         destination,
-        minio_config: dict = None,
         endpoint=None,
     ):
         super(BaseComponent, self).__init__()
