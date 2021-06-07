@@ -93,20 +93,15 @@ class Executor(BaseExecutor):
         """
         print(f"source {source} destination {destination}")
         try:
-            result = client.fput_object(
+            client.fput_object(
                 bucket_name=bucket_name,
                 file_path=source,
                 object_name=destination,
             )
-            if result[0] is None:  #pylint: disable=no-else-raise
-                raise RuntimeError(
-                    "Upload failed - source: {}  destination - {} bucket_name - {}"
-                    .format(source, destination, bucket_name))
-            else:
-                output_dict[destination] = {
-                    "bucket_name": bucket_name,
-                    "source": source,
-                }
+            output_dict[destination] = {
+                "bucket_name": bucket_name,
+                "source": source,
+            }
         except (
                 urllib3.exceptions.MaxRetryError,
                 urllib3.exceptions.NewConnectionError,
