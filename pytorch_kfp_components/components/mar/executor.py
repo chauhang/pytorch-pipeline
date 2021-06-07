@@ -59,10 +59,8 @@ class Executor(BaseExecutor):
         ]
 
         if not mar_config:
-            raise ValueError(
-                f"Mar config cannot be empty. "
-                f"Mandatory arguments are {mandatory_args}"
-            )
+            raise ValueError(f"Mar config cannot be empty. "
+                             f"Mandatory arguments are {mandatory_args}")
 
         missing_list = []
         for key in mandatory_args:
@@ -86,8 +84,7 @@ class Executor(BaseExecutor):
             except ValueError as e:
                 raise ValueError(
                     "Unable to download config "
-                    "properties file using url - {}".format(url)
-                ) from e
+                    "properties file using url - {}".format(url)) from e
 
         return url
 
@@ -143,14 +140,13 @@ class Executor(BaseExecutor):
 
         print("Running Archiver cmd: ", archiver_cmd)
 
-        return_code = subprocess.Popen(archiver_cmd, shell=True).wait()
-        if return_code != 0:
-            error_msg = (
-                "Error running command {archiver_cmd} {return_code}".format(
-                    archiver_cmd=archiver_cmd, return_code=return_code))
-            print(error_msg)
-            raise Exception("Unable to create mar file: {error_msg}".format(
-                error_msg=error_msg))
+        p = subprocess.Popen(archiver_cmd,
+                             shell=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        out, err = p.communicate()
+        if err:
+            raise ValueError(err)
 
         # If user has provided the export path
         # By default, torch-model-archiver
