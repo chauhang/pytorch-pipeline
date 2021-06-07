@@ -1,4 +1,20 @@
-import kfp
+#!/usr/bin/env/python3
+#
+# Copyright (c) Facebook, Inc. and its affiliates.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Pipeline for cifar10 example."""
+
 import json
 from kfp.onprem import use_k8s_secret
 from kfp import components
@@ -7,37 +23,68 @@ from kfp import dsl
 from kfp import compiler
 
 
+INGRESS_GATEWAY = "http://istio-ingressgateway.istio-system.svc.cluster.local"
+AUTH = ""
+NAMESPACE = "kubeflow-user-example-com"
+COOKIE = "authservice_session=" + AUTH
+EXPERIMENT = "Default"
+
+MINIO_ENDPOINT = "http://minio-service.kubeflow:9000"
+LOG_BUCKET = "mlpipeline"
+TENSORBOARD_IMAGE = "public.ecr.aws/y1x1p2u5/tboard:latest"
+
+DEPLOY_NAME = "torchserve"
+MODEL_NAME = "cifar10"
+ISVC_NAME = DEPLOY_NAME + "." + NAMESPACE + "." + "example.com"
+INPUT_REQUEST = (
+    "https://kubeflow-dataset.s3.us-east-2.amazonaws.com"
+    "/cifar10_input/input.json"
+)
+
+
 yaml_folder_path = "examples/cifar10/yaml"
 yaml_common_folder = "examples/common"
 
-prepare_tensorboard_op = load_component_from_file(f"{yaml_common_folder}/tensorboard/component.yaml")
-prep_op = components.load_component_from_file(f"{yaml_folder_path}/pre_process/component.yaml")
-train_op = components.load_component_from_file(f"{yaml_folder_path}/train/component.yaml")
-deploy_op = load_component_from_file(f"{yaml_common_folder}/deploy/component.yaml")
-pred_op = components.load_component_from_file(f"{yaml_common_folder}/prediction/component.yaml")
+prepare_tensorboard_op = load_component_from_file(
+    f"{yaml_common_folder}/tensorboard/component.yaml"
+)  # pylint: disable=not-callable
+prep_op = components.load_component_from_file(
+    f"{yaml_folder_path}/pre_process/component.yaml"
+)  # pylint: disable=not-callable
+train_op = components.load_component_from_file(
+    f"{yaml_folder_path}/train/component.yaml"
+)  # pylint: disable=not-callable
+deploy_op = load_component_from_file(
+    f"{yaml_common_folder}/deploy/component.yaml"
+)  # pylint: disable=not-callable
+pred_op = components.load_component_from_file(
+    f"{yaml_common_folder}/prediction/component.yaml"
+)  # pylint: disable=not-callable
+minio_op = components.load_component_from_file(
+    f"{yaml_common_folder}/minio/component.yaml"
+)
 
 
-minio_op = components.load_component_from_file(f"{yaml_common_folder}/minio/component.yaml")
-
-
-@dsl.pipeline(name="Training Cifar10 pipeline", description="Cifar 10 dataset pipeline")
+@dsl.pipeline(
+    name="Training Cifar10 pipeline", description="Cifar 10 dataset pipeline"
+)
 def pytorch_cifar10(
-    minio_endpoint = "http://minio-service.kubeflow:9000",
-    log_dir=f"tensorboard/logs/{dsl.RUN_ID_PLACEHOLDER}/",
+    minio_endpoint=MINIO_ENDPOINT,
+    log_bucket=LOG_BUCKET,
+    log_dir=f"tensorboard/logs/{dsl.RUN_ID_PLACEHOLDER}",
     mar_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/model-store",
-    checkpoint_dir=f"checkpoint_dir/cifar10",
     config_prop_path=f"mar/{dsl.RUN_ID_PLACEHOLDER}/config",
     model_uri=f"s3://mlpipeline/mar/{dsl.RUN_ID_PLACEHOLDER}",
-    tf_image="jagadeeshj/tb_plugin:v1.8",
-    log_bucket="mlpipeline",
-    input_req="https://kubeflow-dataset.s3.us-east-2.amazonaws.com/cifar10_input/input.json",
-    cookie="cookie",
-    ingress_gateway="http://istio-ingressgateway.istio-system.svc.cluster.local",
-    isvc_name="torchserve.kubeflow-user-example-com.example.com",
-    deploy="torchserve",
-    model="cifar10",
-    namespace="kubeflow-user-example-com",
+    tf_image=TENSORBOARD_IMAGE,
+    deploy=DEPLOY_NAME,
+    isvc_name=ISVC_NAME,
+    model=MODEL_NAME,
+    namespace=NAMESPACE,
     confusion_matrix_log_dir=f"confusion_matrix/{dsl.RUN_ID_PLACEHOLDER}/",
+    checkpoint_dir="checkpoint_dir/cifar10",
+    input_req=INPUT_REQUEST,
+    cookie=COOKIE,
+    ingress_gateway=INGRESS_GATEWAY,
 ):
     pod_template_spec = json.dumps(
         {
@@ -64,7 +111,10 @@ def pytorch_cifar10(
                                 },
                             },
                             {"name": "AWS_REGION", "value": "minio"},
-                            {"name": "S3_ENDPOINT", "value": f"{minio_endpoint}"},
+                            {
+                                "name": "S3_ENDPOINT",
+                                "value": f"{minio_endpoint}",
+                            },
                             {"name": "S3_USE_HTTPS", "value": "0"},
                             {"name": "S3_VERIFY_SSL", "value": "0"},
                         ]
@@ -80,63 +130,45 @@ def pytorch_cifar10(
         pod_template_spec=pod_template_spec,
     ).set_display_name("Visualization")
 
-    prep_task = prep_op().after(prepare_tb_task).set_display_name("Preprocess & Transform")
+    prep_task = (
+        prep_op()
+        .after(prepare_tb_task)
+        .set_display_name("Preprocess & Transform")
+    )
     train_task = (
         train_op(
             input_data=prep_task.outputs["output_data"],
             profiler="pytorch",
-            confusion_matrix_url=f"minio://{log_bucket}/{confusion_matrix_log_dir}",
-        )
-        .apply(
-            use_k8s_secret(
-                secret_name="mlpipeline-minio-artifact",
-                k8s_secret_key_to_env={
-                    "secretkey": "MINIO_SECRET_KEY",
-                    "accesskey": "MINIO_ACCESS_KEY",
-                },
-            )
+            confusion_matrix_url=f"minio://{log_bucket}/"
+            f"{confusion_matrix_log_dir}",
+            # For GPU set gpu count and accelerator type
+            gpus=0,
+            accelerator="None",
         )
         .after(prep_task)
         .set_display_name("Training")
     )
+    # For GPU uncomment below line and set GPU limit and node selector
+    # ).set_gpu_limit(1).add_node_selector_constraint
+    # ('cloud.google.com/gke-accelerator','nvidia-tesla-p4')
 
-    
-    minio_tb_upload = (
+    (
         minio_op(
             bucket_name="mlpipeline",
             folder_name=log_dir,
             input_path=train_task.outputs["tensorboard_root"],
             filename="",
         )
-        .apply(
-            use_k8s_secret(
-                secret_name="mlpipeline-minio-artifact",
-                k8s_secret_key_to_env={
-                    "secretkey": "MINIO_SECRET_KEY",
-                    "accesskey": "MINIO_ACCESS_KEY",
-                },
-            )
-        )
         .after(train_task)
         .set_display_name("Tensorboard Events Pusher")
     )
 
-
-    minio_checkpoint_dir_upload = (
+    (
         minio_op(
             bucket_name="mlpipeline",
             folder_name=checkpoint_dir,
             input_path=train_task.outputs["checkpoint_dir"],
             filename="",
-        )
-        .apply(
-            use_k8s_secret(
-                secret_name="mlpipeline-minio-artifact",
-                k8s_secret_key_to_env={
-                    "secretkey": "MINIO_SECRET_KEY",
-                    "accesskey": "MINIO_ACCESS_KEY",
-                },
-            )
         )
         .after(train_task)
         .set_display_name("checkpoint_dir Pusher")
@@ -149,39 +181,23 @@ def pytorch_cifar10(
             input_path=train_task.outputs["checkpoint_dir"],
             filename="cifar10_test.mar",
         )
-        .apply(
-            use_k8s_secret(
-                secret_name="mlpipeline-minio-artifact",
-                k8s_secret_key_to_env={
-                    "secretkey": "MINIO_SECRET_KEY",
-                    "accesskey": "MINIO_ACCESS_KEY",
-                },
-            )
-        )
         .after(train_task)
         .set_display_name("Mar Pusher")
     )
-    minio_config_upload = (
+
+    (
         minio_op(
             bucket_name="mlpipeline",
             folder_name=config_prop_path,
             input_path=train_task.outputs["checkpoint_dir"],
             filename="config.properties",
         )
-        .apply(
-            use_k8s_secret(
-                secret_name="mlpipeline-minio-artifact",
-                k8s_secret_key_to_env={
-                    "secretkey": "MINIO_SECRET_KEY",
-                    "accesskey": "MINIO_ACCESS_KEY",
-                },
-            )
-        )
         .after(train_task)
         .set_display_name("Conifg Pusher")
     )
 
     model_uri = str(model_uri)
+    # pylint: disable=unused-variable
     isvc_yaml = """
     apiVersion: "serving.kubeflow.org/v1beta1"
     kind: "InferenceService"
@@ -195,10 +211,35 @@ def pytorch_cifar10(
           storageUri: {}
           resources:
             limits:
-              memory: 4Gi   
+              memory: 4Gi
     """.format(
         deploy, namespace, model_uri
     )
+
+    # For GPU inference use below yaml with gpu count and accelerator
+    gpu_count = "1"
+    accelerator = "nvidia-tesla-p4"
+    isvc_gpu_yaml = """# pylint: disable=unused-variable
+    apiVersion: "serving.kubeflow.org/v1beta1"
+    kind: "InferenceService"
+    metadata:
+      name: {}
+      namespace: {}
+    spec:
+      predictor:
+        serviceAccountName: sa
+        pytorch:
+          storageUri: {}
+          resources:
+            limits:
+              memory: 4Gi   
+              nvidia.com/gpu: {}
+          nodeSelector:
+            cloud.google.com/gke-accelerator: {}
+""".format(
+        deploy, namespace, model_uri, gpu_count, accelerator
+    )
+    # Update inferenceservice_yaml for GPU inference
     deploy_task = (
         deploy_op(action="apply", inferenceservice_yaml=isvc_yaml)
         .after(minio_mar_upload)
@@ -208,7 +249,7 @@ def pytorch_cifar10(
         pred_op(
             host_name=isvc_name,
             input_request=input_req,
-            cookie=f"authservice_session={cookie}",
+            cookie=cookie,
             url=ingress_gateway,
             model=model,
             inference_type="predict",
@@ -216,11 +257,11 @@ def pytorch_cifar10(
         .after(deploy_task)
         .set_display_name("Prediction")
     )
-    explain_task = (
+    (
         pred_op(
             host_name=isvc_name,
             input_request=input_req,
-            cookie=f"authservice_session={cookie}",
+            cookie=cookie,
             url=ingress_gateway,
             model=model,
             inference_type="explain",
@@ -229,6 +270,18 @@ def pytorch_cifar10(
         .set_display_name("Explanation")
     )
 
+    dsl.get_pipeline_conf().add_op_transformer(
+        use_k8s_secret(
+            secret_name="mlpipeline-minio-artifact",
+            k8s_secret_key_to_env={
+                "secretkey": "MINIO_SECRET_KEY",
+                "accesskey": "MINIO_ACCESS_KEY",
+            },
+        )
+    )
+
 
 if __name__ == "__main__":
-    kfp.compiler.Compiler().compile(pytorch_cifar10, package_path="pytorch_cifar10.yaml")
+    compiler.Compiler().compile(
+        pytorch_cifar10, package_path="pytorch_cifar10.yaml"
+    )
