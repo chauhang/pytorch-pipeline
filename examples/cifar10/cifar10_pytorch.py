@@ -126,9 +126,11 @@ model = trainer.ptl_trainer.get_model()
 if trainer.ptl_trainer.global_rank == 0:
     # Mar file generation
 
+    cifar_dir, _ = os.path.split(os.path.abspath(__file__))
+
     mar_config = {
         "MODEL_NAME": "cifar10_test",
-        "MODEL_FILE": "examples/cifar10/cifar10_train.py",
+        "MODEL_FILE": os.path.join(cifar_dir, "cifar10_train.py"),
         "HANDLER": "image_classifier",
         "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
         "VERSION": "1",

@@ -125,15 +125,21 @@ model = trainer.ptl_trainer.get_model()
 if trainer.ptl_trainer.global_rank == 0:
     # Mar file generation
 
+    bert_dir, _ = os.path.split(os.path.abspath(__file__))
+
     mar_config = {
         "MODEL_NAME": "bert_test",
-        "MODEL_FILE": "examples/bert/bert_train.py",
-        "HANDLER": "examples/bert/bert_handler.py",
+        "MODEL_FILE": os.path.join(bert_dir, "bert_train.py"),
+        "HANDLER": os.path.join(bert_dir, "bert_handler.py"),
         "SERIALIZED_FILE": os.path.join(args["checkpoint_dir"], args["model_name"]),
         "VERSION": "1",
         "EXPORT_PATH": args["checkpoint_dir"],
         "CONFIG_PROPERTIES": "https://kubeflow-dataset.s3.us-east-2.amazonaws.com/bert/config.properties",
-        "EXTRA_FILES": "examples/bert/bert-base-uncased-vocab.txt,examples/bert/index_to_name.json,examples/bert/wrapper.py",
+        "EXTRA_FILES": "{},{},{}".format(
+            os.path.join(bert_dir, "bert-base-uncased-vocab.txt"),
+            os.path.join(bert_dir, "index_to_name.json"),
+            os.path.join(bert_dir, "wrapper.py")
+        )
     }
 
     MarGeneration(mar_config=mar_config, mar_save_path=args["checkpoint_dir"])
