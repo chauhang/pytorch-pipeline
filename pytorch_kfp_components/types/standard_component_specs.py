@@ -43,6 +43,10 @@ VIZ_CONFUSION_MATRIX_PREDS = "preds"
 VIZ_CONFUSION_MATRIX_CLASSES = "classes"
 VIZ_CONFUSION_MATRIX_URL = "url"
 
+MINIO_SOURCE = "source"
+MINIO_BUCKET_NAME = "bucket_name"
+MINIO_DESTINATION = "destination"
+MINIO_ENDPOINT = "endpoint"
 
 class Parameters:  # pylint: disable=R0903
     """Parameter class to match the desired type."""
@@ -125,4 +129,18 @@ class VisualizationSpec:
         VIZ_CONFUSION_MATRIX_PREDS: Parameters(type=list, optional=False),
         VIZ_CONFUSION_MATRIX_CLASSES: Parameters(type=list, optional=False),
         VIZ_CONFUSION_MATRIX_URL: Parameters(type=str, optional=False),
+    }
+
+
+class MinIoSpec:
+    INPUT_DICT = {
+        MINIO_SOURCE: Parameters(type=str),
+        MINIO_BUCKET_NAME: Parameters(type=str),
+        MINIO_DESTINATION: Parameters(type=str),
+    }
+
+    OUTPUT_DICT = {}
+
+    EXECUTION_PROPERTIES = {
+        MINIO_ENDPOINT: Parameters(type=str),
     }
